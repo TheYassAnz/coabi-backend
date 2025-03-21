@@ -1,6 +1,6 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model, Types, Document } from 'mongoose';
 
-interface User {
+interface User extends Document {
   name: string;
   surname: string;
   username: string;
@@ -26,6 +26,6 @@ const userSchema = new Schema<User>({
   accommodation_id: { type: Schema.Types.ObjectId, ref: 'Accommodation', required: false }
 });
 
-const User = model<User>('User', userSchema);
+const UserModel = model<User>('User', userSchema);
 
-export default User;
+export default UserModel;

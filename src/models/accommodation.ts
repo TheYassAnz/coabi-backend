@@ -1,6 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
-interface Accommodation {
+interface Accommodation extends Document {
   name: string;
   code: string;
   location: string;
@@ -16,6 +16,6 @@ const accommodationSchema = new Schema<Accommodation>({
   country: { type: String, required: true },
 });
 
-const accommodationModel = model("Accommodation", accommodationSchema);
+const AccommodationModel = model<Accommodation>("Accommodation", accommodationSchema);
 
-export default accommodationModel;
+export default AccommodationModel;
