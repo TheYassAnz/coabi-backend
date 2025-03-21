@@ -17,3 +17,5 @@ const refundSchema = new Schema <Refund>({
 });
 
 const Refund = model<Refund>('Refund', refundSchema);
+
+export default Refund;
