@@ -1,6 +1,6 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model, Types, Document } from 'mongoose';
 
-interface Refund {
+interface Refund extends Document {
   title: string;
   to_refund: number;
   done: boolean;
@@ -16,6 +16,6 @@ const refundSchema = new Schema <Refund>({
   roomate_id: {type: Schema.Types.ObjectId, ref: 'User', required: true}
 });
 
-const Refund = model<Refund>('Refund', refundSchema);
+const RefundModel = model<Refund>('Refund', refundSchema);
 
-export default Refund;
+export default RefundModel;
