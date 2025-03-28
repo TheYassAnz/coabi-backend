@@ -9,11 +9,11 @@ interface Refund extends Document {
 };
 
 const refundSchema = new Schema <Refund>({
-  title: {type: String, required: true},
-  to_refund: {type: Number, required: true},
-  done: {type: Boolean, required: true},
-  user_id: {type: Schema.Types.ObjectId, ref: 'User', required: true},
-  roomate_id: {type: Schema.Types.ObjectId, ref: 'User', required: true}
+    title: {type: String, required: true},
+    to_refund: {type: Number, required: true},
+    done: {type: Boolean, required: false, default: false},
+    user_id: {type: Schema.Types.ObjectId, ref: 'User', required: true},
+    roomate_id: {type: Schema.Types.ObjectId, ref: 'User', required: true}
 });
 
 const RefundModel = model<Refund>('Refund', refundSchema);
