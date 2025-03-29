@@ -1,9 +1,8 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-
-const accommodationCtrl = require("../controllers/accommodation");
+import accommodationCtrl from "../controllers/accommodation";
 
 router.get("/", accommodationCtrl.getAllAccommodations);
 router.post("/", accommodationCtrl.createAccommodation);
 
-module.exports = router;
+export default router;

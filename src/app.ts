@@ -27,8 +27,9 @@ app.get("/", (req: Request, res: Response) => {
 
 // Import routes
 import refundRoutes from "./routes/refund";
-
+import accommodationRoutes from "./routes/accommodation";
 // Use routes
 app.use("/api/refund", refundRoutes);
+app.use("/api/accommodation", accommodationRoutes);
 
 export default app;
