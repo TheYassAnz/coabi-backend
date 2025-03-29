@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from "express";
-import  {getAllRefunds, createRefund, getOneRefund, deleteOneRefund}  from "./controllers/refund";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -20,15 +19,16 @@ mongoose
 
 const app: Application = express();
 
-app.use(express.json()); 
+app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
 });
 
-app.get("/refunds", getAllRefunds); 
-app.post("/refunds", createRefund); 
-app.get("/refunds/:id", getOneRefund);
-app.delete("/refunds/:id", deleteOneRefund)
+// Import routes
+import refundRoutes from "./routes/refund";
+
+// Use routes
+app.use("/api/refund", refundRoutes);
 
 export default app;
