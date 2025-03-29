@@ -1,7 +1,5 @@
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
-import eventRoutes from "./routes/event";
-
 dotenv.config();
 import mongoose from "mongoose";
 
@@ -30,8 +28,10 @@ app.get("/", (req: Request, res: Response) => {
 // Import routes
 import refundRoutes from "./routes/refund";
 import accommodationRoutes from "./routes/accommodation";
+import eventRoutes from "./routes/event";
 // Use routes
 app.use("/api/refund", refundRoutes);
 app.use("/api/accommodation", accommodationRoutes);
+app.use("/api/event", eventRoutes);
 
 export default app;
