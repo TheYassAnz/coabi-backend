@@ -32,3 +32,28 @@ export const getOneEvent = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Une erreur est survenue lors de la récupération de l'événement." });
     }
 };
+
+// Créer un nouvel événement
+export const createEvent = async (req: Request, res: Response) => {
+    try {
+        const { title, description, planned_date, end_date, user_id, accommodation_id } = req.body;
+
+        if (!title || !description || !planned_date || !end_date || !user_id || !accommodation_id) {
+            return res.status(400).json({ error: "Tous les champs sont requis." });
+        }
+
+        const newEvent = new Event({
+            title,
+            description,
+            planned_date: new Date(planned_date),
+            end_date: new Date(end_date),
+            user_id,
+            accommodation_id
+        });
+
+        await newEvent.save();
+        res.status(201).json({ event: newEvent });
+    } catch (error) {
+        res.status(500).json({ error: "Une erreur est survenue lors de la création de l'événement." });
+    }
+};
