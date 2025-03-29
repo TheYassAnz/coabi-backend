@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
+import eventRoutes from "./routes/event";
 
 dotenv.config();
 import mongoose from "mongoose";
@@ -19,6 +20,7 @@ mongoose
 
 const app: Application = express();
 
+app.use(express.json());
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
