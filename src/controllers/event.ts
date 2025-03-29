@@ -82,3 +82,24 @@ export const updateEvent = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Une erreur est survenue lors de la mise à jour de l'événement." });
     }
 };
+
+// Supprimer un événement
+export const deleteEvent = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+        }
+
+        const event = await Event.findByIdAndDelete(id);
+
+        if (!event) {
+            return res.status(404).json({ message: "Événement non trouvé." });
+        }
+
+        res.status(200).json({ message: "Événement supprimé avec succès." });
+    } catch (error) {
+        res.status(500).json({ error: "Une erreur est survenue lors de la suppression de l'événement." });
+    }
+};
