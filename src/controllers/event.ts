@@ -57,3 +57,28 @@ export const createEvent = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Une erreur est survenue lors de la création de l'événement." });
     }
 };
+
+// Mettre à jour un événement
+export const updateEvent = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+        }
+
+        const event = await Event.findByIdAndUpdate(
+            id,
+            { ...req.body },
+            { new: true, runValidators: true }
+        );
+
+        if (!event) {
+            return res.status(404).json({ message: "Événement non trouvé." });
+        }
+
+        res.status(200).json(event);
+    } catch (error) {
+        res.status(500).json({ error: "Une erreur est survenue lors de la mise à jour de l'événement." });
+    }
+};
