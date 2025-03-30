@@ -52,10 +52,36 @@ const createRule = async (req: Request, res: Response) => {
     await newRule.save();
     res.status(201).json({ rule: newRule });
   } catch (error) {
+    res.status(500).json({
+      error: "Une erreur est survenue lors de la création de la règle.",
+    });
+  }
+};
+
+const updateRule = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+    }
+
+    const rule = await Rule.findByIdAndUpdate(
+      id,
+      { ...req.body },
+      { new: true, runValidators: true },
+    );
+
+    if (!rule) {
+      return res.status(404).json({ message: "Règle non trouvée." });
+    }
+
+    res.status(200).json(rule);
+  } catch (error) {
     res
       .status(500)
       .json({
-        error: "Une erreur est survenue lors de la création de la règle.",
+        error: "Une erreur est survenue lors de la mise à jour de la règle.",
       });
   }
 };
@@ -64,6 +90,6 @@ export default {
   getAllRules,
   getOneRule,
   createRule,
-  // updateRule,
+  updateRule,
   // deleteRule
 };
