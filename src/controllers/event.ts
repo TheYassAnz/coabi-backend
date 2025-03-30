@@ -7,16 +7,13 @@ const getAllEvents = async (req: Request, res: Response) => {
     const events = await Event.find();
     res.status(200).json({ events });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          "Une erreur est survenue lors de la récupération des événements.",
-      });
+    res.status(500).json({
+      error: "Une erreur est survenue lors de la récupération des événements.",
+    });
   }
 };
 
-const getOneEvent = async (req: Request, res: Response) => {
+const getOneEvent = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -27,21 +24,18 @@ const getOneEvent = async (req: Request, res: Response) => {
     const event = await Event.findById(id);
 
     if (!event) {
-      res.status(404).json({ message: "Événement non trouvé." });
+      return res.status(404).json({ message: "Événement non trouvé." });
     }
 
     res.status(200).json(event);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          "Une erreur est survenue lors de la récupération de l'événement.",
-      });
+    return res.status(500).json({
+      error: "Une erreur est survenue lors de la récupération de l'événement.",
+    });
   }
 };
 
-const createEvent = async (req: Request, res: Response) => {
+const createEvent = async (req: Request, res: Response): Promise<any> => {
   try {
     const {
       title,
@@ -60,7 +54,7 @@ const createEvent = async (req: Request, res: Response) => {
       !user_id ||
       !accommodation_id
     ) {
-      res.status(400).json({ error: "Tous les champs sont requis." });
+      return res.status(400).json({ error: "Tous les champs sont requis." });
     }
 
     const newEvent = new Event({
@@ -73,22 +67,20 @@ const createEvent = async (req: Request, res: Response) => {
     });
 
     await newEvent.save();
-    res.status(201).json({ event: newEvent });
+    return res.status(201).json({ event: newEvent });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Une erreur est survenue lors de la création de l'événement.",
-      });
+    return res.status(500).json({
+      error: "Une erreur est survenue lors de la création de l'événement.",
+    });
   }
 };
 
-const updateEvent = async (req: Request, res: Response) => {
+const updateEvent = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
     }
 
     const event = await Event.findByIdAndUpdate(
@@ -98,40 +90,36 @@ const updateEvent = async (req: Request, res: Response) => {
     );
 
     if (!event) {
-      res.status(404).json({ message: "Événement non trouvé." });
+      return res.status(404).json({ message: "Événement non trouvé." });
     }
 
-    res.status(200).json(event);
+    return res.status(200).json(event);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Une erreur est survenue lors de la mise à jour de l'événement.",
-      });
+    return res.status(500).json({
+      error: "Une erreur est survenue lors de la mise à jour de l'événement.",
+    });
   }
 };
 
-const deleteEvent = async (req: Request, res: Response) => {
+const deleteEvent = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
     }
 
     const event = await Event.findByIdAndDelete(id);
 
     if (!event) {
-      res.status(404).json({ message: "Événement non trouvé." });
+      return res.status(404).json({ message: "Événement non trouvé." });
     }
 
-    res.status(200).json({ message: "Événement supprimé avec succès." });
+    return res.status(200).json({ message: "Événement supprimé avec succès." });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Une erreur est survenue lors de la suppression de l'événement.",
-      });
+    return res.status(500).json({
+      error: "Une erreur est survenue lors de la suppression de l'événement.",
+    });
   }
 };
 
