@@ -13,7 +13,7 @@ const getAllTasks = async (req: Request, res: Response) => {
   }
 };
 
-const getOneTask = async (req: Request, res: Response) => {
+const getOneTask = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -35,7 +35,7 @@ const getOneTask = async (req: Request, res: Response) => {
   }
 };
 
-const createTask = async (req: Request, res: Response) => {
+const createTask = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, description, weekly, done, user_id, accommodation_id } =
       req.body;
@@ -69,7 +69,7 @@ const createTask = async (req: Request, res: Response) => {
   }
 };
 
-const updateTask = async (req: Request, res: Response) => {
+const updateTask = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -95,7 +95,7 @@ const updateTask = async (req: Request, res: Response) => {
   }
 };
 
-const deleteTask = async (req: Request, res: Response) => {
+const deleteTask = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -111,11 +111,9 @@ const deleteTask = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Tâche supprimée avec succès." });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Une erreur est survenue lors de la suppression de la tâche.",
-      });
+    res.status(500).json({
+      error: "Une erreur est survenue lors de la suppression de la tâche.",
+    });
   }
 };
 
