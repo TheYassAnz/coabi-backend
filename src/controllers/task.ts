@@ -18,13 +18,13 @@ const getOneTask = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
     }
 
     const task = await Task.findById(id);
 
     if (!task) {
-      res.status(404).json({ message: "Tâche non trouvée." });
+      return res.status(404).json({ message: "Tâche non trouvée." });
     }
 
     res.status(200).json(task);
@@ -35,10 +35,46 @@ const getOneTask = async (req: Request, res: Response) => {
   }
 };
 
+const createTask = async (req: Request, res: Response) => {
+  try {
+    const { name, description, weekly, done, user_id, accommodation_id } =
+      req.body;
+
+    if (
+      !name ||
+      !description ||
+      weekly === undefined ||
+      done === undefined ||
+      !user_id ||
+      !accommodation_id
+    ) {
+      return res.status(400).json({ error: "Tous les champs sont requis." });
+    }
+
+    const newTask = new Task({
+      name,
+      description,
+      weekly,
+      done,
+      user_id,
+      accommodation_id,
+    });
+
+    await newTask.save();
+    res.status(201).json({ task: newTask });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        error: "Une erreur est survenue lors de la création de la tâche.",
+      });
+  }
+};
+
 export default {
   getAllTasks,
   getOneTask,
-  //   createTask,
+  createTask,
   //   updateTask,
   //   deleteTask,
 };
