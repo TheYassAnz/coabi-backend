@@ -13,7 +13,7 @@ const getAllRules = async (req: Request, res: Response) => {
   }
 };
 
-const getOneRule = async (req: Request, res: Response) => {
+const getOneRule = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -35,7 +35,7 @@ const getOneRule = async (req: Request, res: Response) => {
   }
 };
 
-const createRule = async (req: Request, res: Response) => {
+const createRule = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, description, accommodation_id } = req.body;
 
@@ -58,7 +58,7 @@ const createRule = async (req: Request, res: Response) => {
   }
 };
 
-const updateRule = async (req: Request, res: Response) => {
+const updateRule = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -84,7 +84,7 @@ const updateRule = async (req: Request, res: Response) => {
   }
 };
 
-const deleteRule = async (req: Request, res: Response) => {
+const deleteRule = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
