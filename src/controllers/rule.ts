@@ -29,10 +29,33 @@ const getOneRule = async (req: Request, res: Response) => {
 
     res.status(200).json(rule);
   } catch (error) {
+    res.status(500).json({
+      error: "Une erreur est survenue lors de la récupération de la règle.",
+    });
+  }
+};
+
+const createRule = async (req: Request, res: Response) => {
+  try {
+    const { title, description, accommodation_id } = req.body;
+
+    if (!title || !description || !accommodation_id) {
+      return res.status(400).json({ error: "Tous les champs sont requis." });
+    }
+
+    const newRule = new Rule({
+      title,
+      description,
+      accommodation_id,
+    });
+
+    await newRule.save();
+    res.status(201).json({ rule: newRule });
+  } catch (error) {
     res
       .status(500)
       .json({
-        error: "Une erreur est survenue lors de la récupération de la règle.",
+        error: "Une erreur est survenue lors de la création de la règle.",
       });
   }
 };
@@ -40,7 +63,7 @@ const getOneRule = async (req: Request, res: Response) => {
 export default {
   getAllRules,
   getOneRule,
-  // createRule,
+  createRule,
   // updateRule,
   // deleteRule
 };
