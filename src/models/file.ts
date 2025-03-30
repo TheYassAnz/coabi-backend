@@ -1,7 +1,8 @@
 import { Schema, model, Types, Document } from 'mongoose';
 
-enum FileTypes {
-  "IMAGE" = "image",
+export enum FileTypes {
+  IMAGE = 'image',
+  PDF = 'pdf'
 }
 
 interface File extends Document {
@@ -23,4 +24,4 @@ const fileSchema = new Schema<File>({
 
 const FileModel = model<File>('File', fileSchema);
 
-export { FileModel, FileTypes };
+export { FileModel };
