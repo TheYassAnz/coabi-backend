@@ -2,18 +2,18 @@ import Rule from "../models/rule";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
-const getAllRules = async (req: Request, res: Response) => {
+const getAllRules = async (req: Request, res: Response): Promise<any> => {
   try {
     const rules = await Rule.find();
-    res.status(200).json({ rules });
+    return res.status(200).json({ rules });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la récupération des règles.",
     });
   }
 };
 
-const getOneRule = async (req: Request, res: Response): Promise<any> => {
+const getRuleById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -27,9 +27,9 @@ const getOneRule = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Règle non trouvée." });
     }
 
-    res.status(200).json(rule);
+    return res.status(200).json(rule);
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la récupération de la règle.",
     });
   }
@@ -50,9 +50,9 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newRule.save();
-    res.status(201).json({ rule: newRule });
+    return res.status(201).json({ rule: newRule });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la création de la règle.",
     });
   }
@@ -76,9 +76,9 @@ const updateRule = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Règle non trouvée." });
     }
 
-    res.status(200).json(rule);
+    return res.status(200).json(rule);
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la mise à jour de la règle.",
     });
   }
@@ -98,9 +98,9 @@ const deleteRule = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Règle non trouvée." });
     }
 
-    res.status(200).json({ message: "Règle supprimée avec succès." });
+    return res.status(200).json({ message: "Règle supprimée avec succès." });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la suppression de la règle.",
     });
   }
@@ -108,7 +108,7 @@ const deleteRule = async (req: Request, res: Response): Promise<any> => {
 
 export default {
   getAllRules,
-  getOneRule,
+  getRuleById,
   createRule,
   updateRule,
   deleteRule,

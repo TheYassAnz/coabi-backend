@@ -89,7 +89,7 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-const getFile = async (req: Request, res: Response): Promise<any> => {
+const getFileById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     const file = await FileModel.findById(id);
@@ -130,6 +130,6 @@ const deleteFile = async (req: Request, res: Response): Promise<any> => {
 
 export default {
   uploadFile,
-  getFile,
+  getFileById,
   deleteFile,
 };
