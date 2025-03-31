@@ -2,18 +2,18 @@ import Task from "../models/task";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
-const getAllTasks = async (req: Request, res: Response) => {
+const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const tasks = await Task.find();
-    res.status(200).json({ tasks });
+    return res.status(200).json({ tasks });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la récupération des tâches.",
     });
   }
 };
 
-const getOneTask = async (req: Request, res: Response): Promise<any> => {
+const getTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -27,9 +27,9 @@ const getOneTask = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Tâche non trouvée." });
     }
 
-    res.status(200).json(task);
+    return res.status(200).json(task);
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la récupération de la tâche.",
     });
   }
@@ -61,9 +61,9 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newTask.save();
-    res.status(201).json({ task: newTask });
+    return res.status(201).json({ task: newTask });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la création de la tâche.",
     });
   }
@@ -87,9 +87,9 @@ const updateTask = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Tâche non trouvée." });
     }
 
-    res.status(200).json(task);
+    return res.status(200).json(task);
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la mise à jour de la tâche.",
     });
   }
@@ -109,9 +109,9 @@ const deleteTask = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Tâche non trouvée." });
     }
 
-    res.status(200).json({ message: "Tâche supprimée avec succès." });
+    return res.status(200).json({ message: "Tâche supprimée avec succès." });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la suppression de la tâche.",
     });
   }
@@ -119,7 +119,7 @@ const deleteTask = async (req: Request, res: Response): Promise<any> => {
 
 export default {
   getAllTasks,
-  getOneTask,
+  getTaskById,
   createTask,
   updateTask,
   deleteTask,

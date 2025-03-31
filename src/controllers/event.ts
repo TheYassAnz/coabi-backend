@@ -2,23 +2,23 @@ import Event from "../models/event";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
-const getAllEvents = async (req: Request, res: Response) => {
+const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const events = await Event.find();
-    res.status(200).json({ events });
+    return res.status(200).json({ events });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Une erreur est survenue lors de la récupération des événements.",
     });
   }
 };
 
-const getOneEvent = async (req: Request, res: Response): Promise<any> => {
+const getEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
     }
 
     const event = await Event.findById(id);
@@ -27,7 +27,7 @@ const getOneEvent = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Événement non trouvé." });
     }
 
-    res.status(200).json(event);
+    return res.status(200).json(event);
   } catch (error) {
     return res.status(500).json({
       error: "Une erreur est survenue lors de la récupération de l'événement.",
@@ -125,7 +125,7 @@ const deleteEvent = async (req: Request, res: Response): Promise<any> => {
 
 export default {
   getAllEvents,
-  getOneEvent,
+  getEventById,
   createEvent,
   updateEvent,
   deleteEvent,

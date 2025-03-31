@@ -2,77 +2,72 @@ import Refund from "../models/refund";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
-const getAllRefunds = async (req: Request, res: Response) => {
+const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const refunds = await Refund.find();
-    res.json({ refunds });
+    return res.json({ refunds });
   } catch (error) {
-    res.status(500).json({ error: "Une erreur est survenue." });
+    return res.status(500).json({ error: "Une erreur est survenue." });
   }
 };
 
-const createRefund = async (req: Request, res: Response) => {
+const createRefund = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, to_refund, user_id, roomate_id } = req.body;
 
     if (!title || to_refund === undefined || !user_id || !roomate_id) {
-      res.status(400).json({ error: "Tous les champs sont requis." });
-      return;
+      return res.status(400).json({ error: "Tous les champs sont requis." });
     }
 
     const newRefund = new Refund({ title, to_refund, user_id, roomate_id });
 
     await newRefund.save();
 
-    res.status(201).json({ refund: newRefund });
+    return res.status(201).json({ refund: newRefund });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Une erreur est survenue.", details: error });
+    return res.status(500).json({ error: "Une erreur est survenue.", details: error });
   }
 };
 
-const getOneRefund = async (req: Request, res: Response) => {
+const getRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: "L'ID fourni n'est pas valide." });
-      return;
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
     }
 
     const refund = await Refund.findById(id);
 
     if (!refund) {
-      res.status(404).json({ message: "Remboursement non trouvé." });
-      return;
+      return res.status(404).json({ message: "Remboursement non trouvé." });
     }
 
-    res.status(200).json(refund);
+    return res.status(200).json(refund);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Une erreur est survenu" });
+    return res.status(500).json({ message: "Une erreur est survenu" });
   }
 };
 
-const deleteOneRefund = async (req: Request, res: Response) => {
+const deleteRefund = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.status(400).json({ message: "L'ID fourni n'est pas valide." });
-      return;
+      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
     }
 
     const refund = await Refund.findById(id);
 
     if (!refund) {
-      res.status(404).json({ message: "Remboursement non trouvé." });
-      return;
+      return res.status(404).json({ message: "Remboursement non trouvé." });
     }
 
     await refund.deleteOne();
-    res.status(200).json({ message: "Remboursement bien supprimé." });
+    return res.status(200).json({ message: "Remboursement bien supprimé." });
   } catch (error) {
     console.log(error);
-    res
+    return res
       .status(500)
       .json({ message: "Une erreur est survenue lors de la suppression." });
   }
@@ -81,6 +76,6 @@ const deleteOneRefund = async (req: Request, res: Response) => {
 export default {
   getAllRefunds,
   createRefund,
-  getOneRefund,
-  deleteOneRefund,
+  getRefundById,
+  deleteRefund,
 };

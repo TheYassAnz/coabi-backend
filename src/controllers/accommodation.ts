@@ -1,26 +1,25 @@
 import Accommodation from "../models/accommodation";
 import { Request, Response } from "express";
 
-const getAllAccommodations = (req: Request, res: Response) => {
-  Accommodation.find()
+const getAllAccommodations = (req: Request, res: Response): Promise<any> => {
+  return Accommodation.find()
     .then((accommodations: any) => {
-      res.status(200).json({
+      return res.status(200).json({
         message: "OK",
         data: accommodations,
       });
     })
     .catch((error: any) => {
-      res.status(500).json({ message: "Not found", error: error.message });
+      return res.status(500).json({ message: "Not found", error: error.message });
     });
 };
 
-const createAccommodation = async (req: Request, res: Response) => {
+const createAccommodation = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, code, location, postalCode, country } = req.body;
 
     if (!name || !code || !location || !postalCode || !country) {
-      res.status(400).json({ message: "All fields are required" });
-      return;
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     const newAccommodation = new Accommodation({
@@ -33,10 +32,10 @@ const createAccommodation = async (req: Request, res: Response) => {
 
     await newAccommodation.save();
 
-    res.status(201).json({ accommodation: newAccommodation });
+    return res.status(201).json({ accommodation: newAccommodation });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Bad request", error });
+    return res.status(500).json({ message: "Bad request", error });
   }
 };
 
