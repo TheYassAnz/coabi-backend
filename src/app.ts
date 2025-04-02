@@ -1,7 +1,4 @@
 import express, { Application, Request, Response } from "express";
-import register from "./controllers/register";
-import login from "./controllers/login";
-
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
