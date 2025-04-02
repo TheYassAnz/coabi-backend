@@ -29,9 +29,9 @@ const updateUser = async (req: Request, res: Response) => {
             return;
         }
 
-        const {firstname: first_name, lastname: last_name, username, password, age, description, email, phone_number, profile_picture_id, accommodation_id} = req.body;  
+        const {firstname, lastname, username, password, age, description, email, phone_number, profile_picture_id, accommodation_id} = req.body;  
 
-        if (!first_name || !last_name || !username || !password || !age || !description || !email || !phone_number || !profile_picture_id || !accommodation_id) {
+        if (!firstname || !lastname || !username || !password || !age || !description || !email || !phone_number || !profile_picture_id || !accommodation_id) {
             res.status(400).json({error: "Tous les champs sont requis."});
             return;
         }
@@ -45,8 +45,8 @@ const updateUser = async (req: Request, res: Response) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        findUser.firstname = first_name;
-        findUser.lastname = last_name;
+        findUser.firstname = firstname;
+        findUser.lastname = lastname;
         findUser.username = username;
         findUser.password = hashedPassword;
         findUser.age = age;
@@ -57,6 +57,10 @@ const updateUser = async (req: Request, res: Response) => {
         findUser.accommodation_id = accommodation_id;
 
         await findUser.save();
+
+        res.status(200).json({ message: "L'utilisateur a été mis à jour avec succès." });
+        return 
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({error: "Une erreur est survenue pendant la modification de l'utilisateur."});
