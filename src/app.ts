@@ -1,4 +1,7 @@
 import express, { Application, Request, Response } from "express";
+import register from "./controllers/register";
+import login from "./controllers/login";
+
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -25,6 +28,7 @@ app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
 });
 
+
 // Import routes
 import refundRoutes from "./routes/refund";
 import accommodationRoutes from "./routes/accommodation";
@@ -32,6 +36,8 @@ import eventRoutes from "./routes/event";
 import ruleRoutes from "./routes/rule";
 import taskRoutes from "./routes/task";
 import fileRoutes from "./routes/file";
+import userRoutes from "./routes/user";
+import authRoutes from "./routes/auth";
 
 // Use routes
 app.use("/api/refund", refundRoutes);
@@ -40,5 +46,7 @@ app.use("/api/event", eventRoutes);
 app.use("/api/rules", ruleRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/files", fileRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 export default app;
