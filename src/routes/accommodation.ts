@@ -4,5 +4,6 @@ import accommodationCtrl from "../controllers/accommodation";
 
 router.get("/", accommodationCtrl.getAllAccommodations);
 router.post("/", accommodationCtrl.createAccommodation);
+router.get("/:id", accommodationCtrl.getAccommodationById);
 
 export default router;

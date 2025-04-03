@@ -3,18 +3,23 @@ import { Request, Response } from "express";
 
 const getAllAccommodations = (req: Request, res: Response): Promise<any> => {
   return Accommodation.find()
-    .then((accommodations: any) => {
+    .then((accommodations: any[]) => {
       return res.status(200).json({
         message: "OK",
         data: accommodations,
       });
     })
     .catch((error: any) => {
-      return res.status(500).json({ message: "Not found", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Not found", error: error.message });
     });
 };
 
-const createAccommodation = async (req: Request, res: Response): Promise<any> => {
+const createAccommodation = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const { name, code, location, postalCode, country } = req.body;
 
@@ -39,7 +44,24 @@ const createAccommodation = async (req: Request, res: Response): Promise<any> =>
   }
 };
 
+const getAccommodationById = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  Accommodation.findById(req.params.id)
+    .then((accommodation: any) => {
+      if (!accommodation) {
+        return res.status(404).json({ message: "Not found" });
+      }
+      return res.status(200).json({ message: "OK", data: accommodation });
+    })
+    .catch((error: any) => {
+      return res.status(500).json({ message: "Bad request", error });
+    });
+};
+
 export default {
+  getAccommodationById,
   getAllAccommodations,
   createAccommodation,
 };
