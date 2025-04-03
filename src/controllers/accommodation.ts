@@ -60,7 +60,36 @@ const getAccommodationById = async (
     });
 };
 
+const updateAccommodationById = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { name, code, location, postalCode, country } = req.body;
+    const accommodationId = req.params.id;
+    const accommodation = await Accommodation.findByIdAndUpdate(
+      accommodationId,
+      {
+        name,
+        code,
+        location,
+        postalCode,
+        country,
+      },
+      { new: true },
+    );
+    if (!accommodation) {
+      return res.status(404).json({ message: "Not found" });
+    }
+    return res.status(200).json({ message: "OK", data: accommodation });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Bad request", error });
+  }
+};
+
 export default {
+  updateAccommodationById,
   getAccommodationById,
   getAllAccommodations,
   createAccommodation,
