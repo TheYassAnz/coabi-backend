@@ -83,12 +83,29 @@ const updateAccommodationById = async (
     }
     return res.status(200).json({ message: "OK", data: accommodation });
   } catch (error) {
-    console.error(error);
+    return res.status(500).json({ message: "Bad request", error });
+  }
+};
+
+const deleteAccommodationById = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const accommodationId = req.params.id;
+    const accommodation =
+      await Accommodation.findByIdAndDelete(accommodationId);
+    if (!accommodation) {
+      return res.status(404).json({ message: "Not found" });
+    }
+    return res.status(200).json({ message: "OK", data: accommodation });
+  } catch (error) {
     return res.status(500).json({ message: "Bad request", error });
   }
 };
 
 export default {
+  deleteAccommodationById,
   updateAccommodationById,
   getAccommodationById,
   getAllAccommodations,
