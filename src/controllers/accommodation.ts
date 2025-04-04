@@ -8,7 +8,7 @@ const getAllAccommodations = async (
 ): Promise<any> => {
   try {
     const accommodations = await Accommodation.find();
-    return res.status(200).json({ accommodations });
+    return res.status(200).json(accommodations);
   } catch (error: any) {
     return res.status(500).json({
       error: "Internal server error.",
@@ -23,10 +23,6 @@ const createAccommodation = async (
   try {
     const { name, code, location, postalCode, country } = req.body;
 
-    if (!name || !code || !location || !postalCode || !country) {
-      return res.status(400).json({ message: "Bad request" });
-    }
-
     const newAccommodation = new Accommodation({
       name,
       code,
@@ -37,12 +33,12 @@ const createAccommodation = async (
 
     await newAccommodation.save();
 
-    return res.status(201).json({ accommodation: newAccommodation });
+    return res.status(201).json(newAccommodation);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -53,18 +49,18 @@ const getAccommodationById = async (
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
-    const refund = await Accommodation.findById(id);
+    const accommodation = await Accommodation.findById(id);
 
-    if (!refund) {
-      return res.status(404).json({ message: "Not found." });
+    if (!accommodation) {
+      return res.status(404).json({ error: "Not found." });
     }
 
-    return res.status(200).json(refund);
+    return res.status(200).json(accommodation);
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -88,14 +84,14 @@ const updateAccommodationById = async (
       { new: true, runValidators: true },
     );
     if (!accommodation) {
-      return res.status(404).json({ message: "Not found" });
+      return res.status(404).json({ error: "Not found" });
     }
-    return res.status(200).json({ accommodation });
+    return res.status(200).json(accommodation);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -108,11 +104,11 @@ const deleteAccommodationById = async (
     const accommodation =
       await Accommodation.findByIdAndDelete(accommodationId);
     if (!accommodation) {
-      return res.status(404).json({ message: "Not found" });
+      return res.status(404).json({ error: "Not found" });
     }
-    return res.status(200).json({ message: "OK" });
+    return res.status(200).json({ message: "OK." });
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 

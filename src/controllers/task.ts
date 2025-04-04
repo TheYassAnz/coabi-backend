@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const tasks = await Task.find();
-    return res.status(200).json({ tasks });
+    return res.status(200).json(tasks);
   } catch (error: any) {
     return res.status(500).json({
       error: "Internal server error.",
@@ -18,13 +18,13 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const task = await Task.findById(id);
 
     if (!task) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json(task);
@@ -40,17 +40,6 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
     const { name, description, weekly, done, user_id, accommodation_id } =
       req.body;
 
-    if (
-      !name ||
-      !description ||
-      weekly === undefined ||
-      done === undefined ||
-      !user_id ||
-      !accommodation_id
-    ) {
-      return res.status(400).json({ error: "Bad request." });
-    }
-
     const newTask = new Task({
       name,
       description,
@@ -61,10 +50,10 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newTask.save();
-    return res.status(201).json({ task: newTask });
+    return res.status(201).json(newTask);
   } catch (error: any) {
-    if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+    if (error instanceof mongoose.Error.ValidationError) {
+      return res.status(400).json({ error: "Bad request" });
     }
     return res.status(500).json({
       error: "Internal server error.",
@@ -77,7 +66,7 @@ const updateTask = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const task = await Task.findByIdAndUpdate(
@@ -87,13 +76,13 @@ const updateTask = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (!task) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json(task);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     return res.status(500).json({
       error: "Internal server error.",
@@ -106,13 +95,13 @@ const deleteTask = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const task = await Task.findByIdAndDelete(id);
 
     if (!task) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json({ message: "OK." });

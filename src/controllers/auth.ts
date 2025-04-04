@@ -18,24 +18,16 @@ const register = async (req: Request, res: Response): Promise<any> => {
       accommodation_id,
     } = req.body;
 
-    if (
-      !firstname ||
-      !lastname ||
-      !username ||
-      !password ||
-      !age ||
-      !description ||
-      !email ||
-      !phone_number
-    ) {
-      return res.status(400).json({ error: "Bad request." });
+    const existUsername = await User.findOne({ username });
+
+    if (existUsername) {
+      return res.status(400).json({ error: "Username already exists." });
     }
 
     const existEmail = await User.findOne({ email });
 
     if (existEmail) {
-      res.status(400).json({ error: "Already exists." });
-      return;
+      return res.status(400).json({ error: "Email already exists." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -55,10 +47,10 @@ const register = async (req: Request, res: Response): Promise<any> => {
 
     await newUser.save();
 
-    res.status(201).json({ user: newUser });
+    res.status(201).json(newUser);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     res.status(500).json({ error: "Internal server error." });
   }
@@ -91,7 +83,6 @@ const login = async (req: Request, res: Response) => {
     const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: "1h" });
     res.status(200).json({ token });
   } catch (error: any) {
-    console.log(error);
     res.status(500).json({ error: "Internal server error." });
   }
 };
