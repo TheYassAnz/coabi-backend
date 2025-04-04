@@ -3,8 +3,7 @@
   "builds": [
     {
       "src": "dist/server.js",
-      "use": "@vercel/node",
-      "config": { "includeFiles": ["dist/**", ".env"] }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -12,5 +11,8 @@
       "src": "/(.*)",
       "dest": "dist/server.js"
     }
-  ]
+  ],
+  "buildCommand": "npx tsc",
+  "devCommand": "npm start",
+  "installCommand": "npm install"
 }
