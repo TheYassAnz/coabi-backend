@@ -12,7 +12,8 @@
       "dest": "dist/server.js"
     }
   ],
-  "buildCommand": "npx tsc",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "devCommand": "npm start",
   "installCommand": "npm install"
 }
