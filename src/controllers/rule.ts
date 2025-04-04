@@ -6,9 +6,9 @@ const getAllRules = async (req: Request, res: Response): Promise<any> => {
   try {
     const rules = await Rule.find();
     return res.status(200).json({ rules });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
-      error: "Une erreur est survenue lors de la récupération des règles.",
+      error: "Internal server error.",
     });
   }
 };
@@ -18,19 +18,19 @@ const getRuleById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "Bad request." });
     }
 
     const rule = await Rule.findById(id);
 
     if (!rule) {
-      return res.status(404).json({ message: "Règle non trouvée." });
+      return res.status(404).json({ message: "Not found." });
     }
 
     return res.status(200).json(rule);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
-      error: "Une erreur est survenue lors de la récupération de la règle.",
+      error: "Internal server error.",
     });
   }
 };
@@ -40,7 +40,7 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
     const { title, description, accommodation_id } = req.body;
 
     if (!title || !description || !accommodation_id) {
-      return res.status(400).json({ error: "Tous les champs sont requis." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const newRule = new Rule({
@@ -51,9 +51,12 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
 
     await newRule.save();
     return res.status(201).json({ rule: newRule });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
     return res.status(500).json({
-      error: "Une erreur est survenue lors de la création de la règle.",
+      error: "Internal server error.",
     });
   }
 };
@@ -63,7 +66,7 @@ const updateRule = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "Bad request." });
     }
 
     const rule = await Rule.findByIdAndUpdate(
@@ -73,13 +76,13 @@ const updateRule = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (!rule) {
-      return res.status(404).json({ message: "Règle non trouvée." });
+      return res.status(404).json({ message: "Not found." });
     }
 
     return res.status(200).json(rule);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
-      error: "Une erreur est survenue lors de la mise à jour de la règle.",
+      error: "Internal server error.",
     });
   }
 };
@@ -89,19 +92,19 @@ const deleteRule = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "L'ID fourni n'est pas valide." });
+      return res.status(400).json({ message: "Bad request." });
     }
 
     const rule = await Rule.findByIdAndDelete(id);
 
     if (!rule) {
-      return res.status(404).json({ message: "Règle non trouvée." });
+      return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json({ message: "Règle supprimée avec succès." });
-  } catch (error) {
+    return res.status(200).json({ message: "OK." });
+  } catch (error: any) {
     return res.status(500).json({
-      error: "Une erreur est survenue lors de la suppression de la règle.",
+      error: "Internal server error.",
     });
   }
 };

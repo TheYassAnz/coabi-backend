@@ -1,117 +1,86 @@
-import User from '../models/user';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { Request, Response } from 'express';
-import mongoose from 'mongoose';
+import User from "../models/user";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
+import mongoose from "mongoose";
 
-
-const getAllUsers = async (req: Request, res: Response) => {
-    try {
-
-        const users = await User.find();  
-        res.json({ users });
-
-    } catch (error) {
-
-        res.status(500).json({error: "Une erreur est survenue."});
-
-    }
-};  
-
-
-const updateUser = async (req: Request, res: Response) => {
-    try {
-
-        const id = req.params.id;
-
-        if(!mongoose.Types.ObjectId.isValid(id)){
-            res.status(400).json({message: "L'ID fourni n'est pas valide."});
-            return;
-        }
-
-        const {firstname, lastname, username, password, age, description, email, phone_number, profile_picture_id, accommodation_id} = req.body;  
-
-        if (!firstname || !lastname || !username || !password || !age || !description || !email || !phone_number || !profile_picture_id || !accommodation_id) {
-            res.status(400).json({error: "Tous les champs sont requis."});
-            return;
-        }
-
-        let findUser = await User.findById(id);
-
-        if(!findUser){
-            res.status(404).json({message: "L'utilisateur n'existe pas."});
-            return;
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        findUser.firstname = firstname;
-        findUser.lastname = lastname;
-        findUser.username = username;
-        findUser.password = hashedPassword;
-        findUser.age = age;
-        findUser.description = description;
-        findUser.email = email;
-        findUser.phone_number = phone_number;
-        findUser.profile_picture_id = profile_picture_id;
-        findUser.accommodation_id = accommodation_id;
-
-        await findUser.save();
-
-        res.status(200).json({ message: "L'utilisateur a été mis à jour avec succès." });
-        return 
-        
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({error: "Une erreur est survenue pendant la modification de l'utilisateur."});
-    }
-}
-
-const getUserById = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            res.status(400).json({ message: "L'ID fourni n'est pas valide." });
-            return;
-        }
-
-        const user = await User.findById(id);
-
-        if(!user){
-            res.status(404).json({message: "L'utilisateur n'existe pas."});
-            return;
-        }
-
-        res.status(200).json(user);
-        return;
-
-     } catch (error) {
-        res.status(500).json({error: "Une erreur est survenue."});
-     }
+const getAllUsers = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const users = await User.find();
+    return res.json({ users });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error." });
+  }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            res.status(400).json({ message: "L'ID fourni n'est pas valide." });
-            return;
-        }
+const updateUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const id = req.params.id;
 
-        await User.findByIdAndDelete(id);
-
-        res.status(200).json({message: "L'utilisateur a bien été supprimé."});
-        return;
-
-    } catch (error) {
-        res.status(500).json({error: "Une erreur est survenue pendant la suppression de l'utilisateur."});
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
     }
-}
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    const updatedData = { ...req.body, password: hashedPassword };
+
+    const user = await User.findByIdAndUpdate(id, updatedData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "Not found." });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+const getUserById = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Not found." });
+    }
+
+    return res.status(200).json(user);
+  } catch (error: any) {
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+const deleteUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const id = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "OK." });
+  } catch (error: any) {
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
 
 export default {
-    getAllUsers,
-    updateUser,
-    getUserById,
-    deleteUser,
-  };
-  
+  getAllUsers,
+  updateUser,
+  getUserById,
+  deleteUser,
+};
