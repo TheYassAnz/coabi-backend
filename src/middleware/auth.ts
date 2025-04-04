@@ -5,8 +5,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
-    res.status(401).json({ error: "Il n'y a aucun token de renseigné." });
-    return;
+    return res.status(401).json({ error: "No token given." });
   }
 
   try {
@@ -14,8 +13,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(token, secretKey);
     req.body.user = decoded;
     next();
-  } catch (error) {
-    res.status(403).json({ error: "Token invalide." });
+  } catch (error: any) {
+    return res.status(403).json({ error: "Invalid token." });
   }
 };
 

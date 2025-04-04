@@ -55,17 +55,13 @@ export const upload = multer({
 const uploadFile = async (req: Request, res: Response): Promise<any> => {
   try {
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ error: "Aucun fichier n'a été téléchargé." });
+      return res.status(400).json({ error: "No file uploaded." });
     }
 
     const { description, user_id } = req.body;
 
     if (!description || !user_id) {
-      return res
-        .status(400)
-        .json({ error: "La description et l'ID utilisateur sont requis." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const fileType =
@@ -82,9 +78,12 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
 
     await newFile.save();
     res.status(201).json({ file: newFile });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
     res.status(500).json({
-      error: "Une erreur est survenue lors du téléchargement du fichier.",
+      error: "Internal server error.",
     });
   }
 };
@@ -95,14 +94,14 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Fichier non trouvé." });
+      return res.status(404).json({ message: "Not found." });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
     res.sendFile(filePath);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({
-      error: "Une erreur est survenue lors de la récupération du fichier.",
+      error: "Internal server error.",
     });
   }
 };
@@ -113,17 +112,17 @@ const deleteFile = async (req: Request, res: Response): Promise<any> => {
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Fichier non trouvé." });
+      return res.status(404).json({ message: "Not found." });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
     fs.unlinkSync(filePath);
     await file.deleteOne();
 
-    res.status(200).json({ message: "Fichier supprimé avec succès." });
-  } catch (error) {
+    res.status(200).json({ message: "OK." });
+  } catch (error: any) {
     res.status(500).json({
-      error: "Une erreur est survenue lors de la suppression du fichier.",
+      error: "Internal server error.",
     });
   }
 };
