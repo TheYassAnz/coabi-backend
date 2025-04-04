@@ -4,8 +4,8 @@ import { upload } from "../controllers/file";
 
 const router = express.Router();
 
-router.post("/", upload.single("file"), fileCtrl.uploadFile);
-router.get("/:id", fileCtrl.getFileById);
-router.delete("/:id", fileCtrl.deleteFile);
+router.post("/", authMiddleware, upload.single("file"), fileCtrl.uploadFile);
+router.get("/:id", authMiddleware, fileCtrl.getFileById);
+router.delete("/:id", authMiddleware, fileCtrl.deleteFile);
 
 export default router;
