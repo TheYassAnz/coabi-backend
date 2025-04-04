@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "start": "tsx watch server.ts",
     "test": "jest",
     "prepare": "husky"
