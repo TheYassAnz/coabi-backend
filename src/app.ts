@@ -25,7 +25,6 @@ app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
 });
 
-
 // Import routes
 import refundRoutes from "./routes/refund";
 import accommodationRoutes from "./routes/accommodation";
@@ -37,9 +36,9 @@ import userRoutes from "./routes/user";
 import authRoutes from "./routes/auth";
 
 // Use routes
-app.use("/api/refund", refundRoutes);
-app.use("/api/accommodation", accommodationRoutes);
-app.use("/api/event", eventRoutes);
+app.use("/api/refunds", refundRoutes);
+app.use("/api/accommodations", accommodationRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/rules", ruleRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/files", fileRoutes);

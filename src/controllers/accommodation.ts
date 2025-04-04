@@ -1,19 +1,19 @@
 import Accommodation from "../models/accommodation";
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 
-const getAllAccommodations = (req: Request, res: Response): Promise<any> => {
-  return Accommodation.find()
-    .then((accommodations: any[]) => {
-      return res.status(200).json({
-        message: "OK",
-        data: accommodations,
-      });
-    })
-    .catch((error: any) => {
-      return res
-        .status(500)
-        .json({ message: "Not found", error: error.message });
+const getAllAccommodations = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const accommodations = await Accommodation.find();
+    return res.status(200).json({ accommodations });
+  } catch (error: any) {
+    return res.status(500).json({
+      error: "Internal server error.",
     });
+  }
 };
 
 const createAccommodation = async (
@@ -24,7 +24,7 @@ const createAccommodation = async (
     const { name, code, location, postalCode, country } = req.body;
 
     if (!name || !code || !location || !postalCode || !country) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const newAccommodation = new Accommodation({
@@ -38,9 +38,11 @@ const createAccommodation = async (
     await newAccommodation.save();
 
     return res.status(201).json({ accommodation: newAccommodation });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Bad request", error });
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
 
@@ -48,16 +50,22 @@ const getAccommodationById = async (
   req: Request,
   res: Response,
 ): Promise<any> => {
-  Accommodation.findById(req.params.id)
-    .then((accommodation: any) => {
-      if (!accommodation) {
-        return res.status(404).json({ message: "Not found" });
-      }
-      return res.status(200).json({ message: "OK", data: accommodation });
-    })
-    .catch((error: any) => {
-      return res.status(500).json({ message: "Bad request", error });
-    });
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
+    const refund = await Accommodation.findById(id);
+
+    if (!refund) {
+      return res.status(404).json({ message: "Not found." });
+    }
+
+    return res.status(200).json(refund);
+  } catch (error: any) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const updateAccommodationById = async (
@@ -67,6 +75,7 @@ const updateAccommodationById = async (
   try {
     const { name, code, location, postalCode, country } = req.body;
     const accommodationId = req.params.id;
+
     const accommodation = await Accommodation.findByIdAndUpdate(
       accommodationId,
       {
@@ -76,14 +85,17 @@ const updateAccommodationById = async (
         postalCode,
         country,
       },
-      { new: true },
+      { new: true, runValidators: true },
     );
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
-    return res.status(200).json({ message: "OK", data: accommodation });
-  } catch (error) {
-    return res.status(500).json({ message: "Bad request", error });
+    return res.status(200).json({ accommodation });
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
 
@@ -98,9 +110,9 @@ const deleteAccommodationById = async (
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
-    return res.status(200).json({ message: "OK", data: accommodation });
-  } catch (error) {
-    return res.status(500).json({ message: "Bad request", error });
+    return res.status(200).json({ message: "OK" });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Internal server error", error });
   }
 };
 
