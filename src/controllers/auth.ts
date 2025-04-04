@@ -31,10 +31,17 @@ const register = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ error: "Bad request." });
     }
 
+    const existUsername = await User.findOne({ username });
+
+    if (existUsername) {
+      res.status(400).json({ error: "Username already exists." });
+      return;
+    }
+
     const existEmail = await User.findOne({ email });
 
     if (existEmail) {
-      res.status(400).json({ error: "Already exists." });
+      res.status(400).json({ error: "Email already exists." });
       return;
     }
 
@@ -58,7 +65,7 @@ const register = async (req: Request, res: Response): Promise<any> => {
     res.status(201).json({ user: newUser });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     res.status(500).json({ error: "Internal server error." });
   }

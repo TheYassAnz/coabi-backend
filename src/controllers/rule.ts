@@ -18,13 +18,13 @@ const getRuleById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const rule = await Rule.findById(id);
 
     if (!rule) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json(rule);
@@ -53,7 +53,7 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
     return res.status(201).json({ rule: newRule });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     return res.status(500).json({
       error: "Internal server error.",
@@ -66,7 +66,7 @@ const updateRule = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const rule = await Rule.findByIdAndUpdate(
@@ -76,11 +76,14 @@ const updateRule = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (!rule) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json(rule);
   } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ error: "Bad request" });
+    }
     return res.status(500).json({
       error: "Internal server error.",
     });
@@ -92,13 +95,13 @@ const deleteRule = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const rule = await Rule.findByIdAndDelete(id);
 
     if (!rule) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json({ message: "OK." });

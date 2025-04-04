@@ -80,7 +80,7 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
     res.status(201).json({ file: newFile });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     res.status(500).json({
       error: "Internal server error.",
@@ -112,7 +112,7 @@ const deleteFile = async (req: Request, res: Response): Promise<any> => {
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);

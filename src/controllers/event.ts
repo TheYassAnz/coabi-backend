@@ -18,13 +18,13 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
 
     const event = await Event.findById(id);
 
     if (!event) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json(event);
@@ -70,7 +70,7 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
     return res.status(201).json({ event: newEvent });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     return res.status(500).json({
       error: "Internal server error.",
@@ -83,23 +83,23 @@ const updateEvent = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(
+    const event = await Event.findByIdAndUpdate(
       id,
       { ...req.body },
       { new: true, runValidators: true },
     );
 
-    if (!updatedEvent) {
-      return res.status(404).json({ message: "Not found." });
+    if (!event) {
+      return res.status(404).json({ error: "Not found." });
     }
 
-    return res.status(200).json({ event: updatedEvent });
+    return res.status(200).json({ event });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     return res.status(500).json({
       error: "Internal server error.",
@@ -112,13 +112,13 @@ const deleteEvent = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ error: "Bad request." });
     }
 
     const event = await Event.findByIdAndDelete(id);
 
     if (!event) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     return res.status(200).json({ message: "OK." });
