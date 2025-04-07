@@ -60,10 +60,6 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
 
     const { description, user_id } = req.body;
 
-    if (!description || !user_id) {
-      return res.status(400).json({ error: "Bad request." });
-    }
-
     const fileType =
       req.file.mimetype === "application/pdf" ? FileTypes.PDF : FileTypes.IMAGE;
 
@@ -77,10 +73,10 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newFile.save();
-    res.status(201).json({ file: newFile });
+    res.status(201).json(newFile);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ error: "Bad request" });
     }
     res.status(500).json({
       error: "Internal server error.",
@@ -112,7 +108,7 @@ const deleteFile = async (req: Request, res: Response): Promise<any> => {
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ error: "Not found." });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
