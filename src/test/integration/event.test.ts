@@ -61,6 +61,21 @@ describe("Event API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", eventId);
   });
 
+  test("GET /events/filter should return events by filter", async () => {
+    const params = {
+      planned_date_start: "2022-12-01T10:00:00.000Z",
+      planned_date_end: "2024-12-01T12:00:00.000Z",
+    };
+
+    const response = await request(app)
+      .get("/api/events/filter")
+      .query(params)
+      .expect(200);
+
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data.length).toBeGreaterThan(0);
+  });
+
   test("PUT /events/:id should update an event by ID", async () => {
     const updatedData = {
       title: "Updated Test Event",

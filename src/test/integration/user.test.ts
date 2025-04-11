@@ -61,6 +61,20 @@ describe("User API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", userId);
   });
 
+  test("GET /users/filter should return tasks by filter", async () => {
+    const params = {
+      name: "Jo",
+    };
+
+    const response = await request(app)
+      .get("/api/users/filter")
+      .query(params)
+      .expect(200);
+
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data.length).toBeGreaterThan(0);
+  });
+
   test("PUT /users/:id should update a user by ID", async () => {
     const updatedData = {
       firstname: "Jane",
