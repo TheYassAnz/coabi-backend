@@ -5,32 +5,10 @@ import mongoose from "mongoose";
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const tasks = await Task.find();
-    return res.status(200).json(tasks);
+    return res.status(200).json({ message: "Ok", data: tasks });
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
-    });
-  }
-};
-
-const getTaskById = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Bad request." });
-    }
-
-    const task = await Task.findById(id);
-
-    if (!task) {
-      return res.status(404).json({ error: "Not found." });
-    }
-
-    return res.status(200).json(task);
-  } catch (error: any) {
-    return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
@@ -50,23 +28,45 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newTask.save();
-    return res.status(201).json(newTask);
+    return res.status(201).json({ message: "Ok", data: newTask });
   } catch (error: any) {
     if (error instanceof mongoose.Error.ValidationError) {
-      return res.status(400).json({ error: "Bad request" });
+      return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const updateTask = async (req: Request, res: Response): Promise<any> => {
+const getTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Bad request." });
+      return res.status(400).json({ message: "Bad request." });
+    }
+
+    const task = await Task.findById(id);
+
+    if (!task) {
+      return res.status(404).json({ message: "Not found." });
+    }
+
+    return res.status(200).json({ message: "Ok", data: task });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
+};
+
+const updateTaskById = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
     }
 
     const task = await Task.findByIdAndUpdate(
@@ -76,46 +76,46 @@ const updateTask = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (!task) {
-      return res.status(404).json({ error: "Not found." });
+      return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json(task);
+    return res.status(200).json({ message: "Ok", data: task });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ error: "Bad request" });
+      return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const deleteTask = async (req: Request, res: Response): Promise<any> => {
+const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Bad request." });
+      return res.status(400).json({ message: "Bad request." });
     }
 
     const task = await Task.findByIdAndDelete(id);
 
     if (!task) {
-      return res.status(404).json({ error: "Not found." });
+      return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json({ message: "OK." });
+    return res.sendStatus(204);
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
 export default {
   getAllTasks,
-  getTaskById,
   createTask,
-  updateTask,
-  deleteTask,
+  getTaskById,
+  updateTaskById,
+  deleteTaskById,
 };

@@ -5,7 +5,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: "No token given." });
+    return res.status(401).json({ message: "No token given." });
   }
 
   try {
@@ -14,7 +14,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     req.body.user = decoded;
     next();
   } catch (error: any) {
-    return res.status(403).json({ error: "Invalid token." });
+    return res.status(403).json({ message: "Invalid token." });
   }
 };
 

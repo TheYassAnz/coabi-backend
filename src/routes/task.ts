@@ -4,9 +4,9 @@ import taskCtrl from "../controllers/task";
 const router = express.Router();
 
 router.get("/", taskCtrl.getAllTasks);
-router.get("/:id", taskCtrl.getTaskById);
 router.post("/", taskCtrl.createTask);
-router.put("/:id", taskCtrl.updateTask);
-router.delete("/:id", taskCtrl.deleteTask);
+router.get("/:id", taskCtrl.getTaskById);
+router.put("/:id", taskCtrl.updateTaskById);
+router.delete("/:id", taskCtrl.deleteTaskById);
 
 export default router;
