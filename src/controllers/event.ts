@@ -5,10 +5,42 @@ import mongoose from "mongoose";
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const events = await Event.find();
-    return res.status(200).json({ events });
+    return res.status(200).json({ message: "Ok", data: events });
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
+    });
+  }
+};
+
+const createEvent = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const {
+      title,
+      description,
+      planned_date,
+      end_date,
+      user_id,
+      accommodation_id,
+    } = req.body;
+
+    const newEvent = new Event({
+      title,
+      description,
+      planned_date: new Date(planned_date),
+      end_date: new Date(end_date),
+      user_id,
+      accommodation_id,
+    });
+
+    await newEvent.save();
+    return res.status(201).json({ message: "Ok", data: newEvent });
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({
+      message: "Internal server error.",
     });
   }
 };
@@ -27,58 +59,15 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json(event);
+    return res.status(200).json({ message: "Ok", data: event });
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const createEvent = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const {
-      title,
-      description,
-      planned_date,
-      end_date,
-      user_id,
-      accommodation_id,
-    } = req.body;
-
-    if (
-      !title ||
-      !description ||
-      !planned_date ||
-      !end_date ||
-      !user_id ||
-      !accommodation_id
-    ) {
-      return res.status(400).json({ error: "Bad request." });
-    }
-
-    const newEvent = new Event({
-      title,
-      description,
-      planned_date: new Date(planned_date),
-      end_date: new Date(end_date),
-      user_id,
-      accommodation_id,
-    });
-
-    await newEvent.save();
-    return res.status(201).json({ event: newEvent });
-  } catch (error: any) {
-    if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
-    }
-    return res.status(500).json({
-      error: "Internal server error.",
-    });
-  }
-};
-
-const updateEvent = async (req: Request, res: Response): Promise<any> => {
+const updateEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -86,28 +75,28 @@ const updateEvent = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request." });
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(
+    const event = await Event.findByIdAndUpdate(
       id,
       { ...req.body },
       { new: true, runValidators: true },
     );
 
-    if (!updatedEvent) {
+    if (!event) {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json({ event: updatedEvent });
+    return res.status(200).json({ message: "Ok", data: event });
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const deleteEvent = async (req: Request, res: Response): Promise<any> => {
+const deleteEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -121,18 +110,18 @@ const deleteEvent = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json({ message: "OK." });
+    return res.sendStatus(204);
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
 export default {
   getAllEvents,
-  getEventById,
   createEvent,
-  updateEvent,
-  deleteEvent,
+  getEventById,
+  updateEventById,
+  deleteEventById,
 };

@@ -4,9 +4,9 @@ import ruleCtrl from "../controllers/rule";
 const router = express.Router();
 
 router.get("/", ruleCtrl.getAllRules);
-router.get("/:id", ruleCtrl.getRuleById);
 router.post("/", ruleCtrl.createRule);
-router.put("/:id", ruleCtrl.updateRule);
-router.delete("/:id", ruleCtrl.deleteRule);
+router.get("/:id", ruleCtrl.getRuleById);
+router.put("/:id", ruleCtrl.updateRuleById);
+router.delete("/:id", ruleCtrl.deleteRuleById);
 
 export default router;

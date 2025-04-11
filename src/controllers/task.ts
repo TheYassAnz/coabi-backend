@@ -5,10 +5,36 @@ import mongoose from "mongoose";
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const tasks = await Task.find();
-    return res.status(200).json({ tasks });
+    return res.status(200).json({ message: "Ok", data: tasks });
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
+    });
+  }
+};
+
+const createTask = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { name, description, weekly, done, user_id, accommodation_id } =
+      req.body;
+
+    const newTask = new Task({
+      name,
+      description,
+      weekly,
+      done,
+      user_id,
+      accommodation_id,
+    });
+
+    await newTask.save();
+    return res.status(201).json({ message: "Ok", data: newTask });
+  } catch (error: any) {
+    if (error instanceof mongoose.Error.ValidationError) {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({
+      message: "Internal server error.",
     });
   }
 };
@@ -27,52 +53,15 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json(task);
+    return res.status(200).json({ message: "Ok", data: task });
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const createTask = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { name, description, weekly, done, user_id, accommodation_id } =
-      req.body;
-
-    if (
-      !name ||
-      !description ||
-      weekly === undefined ||
-      done === undefined ||
-      !user_id ||
-      !accommodation_id
-    ) {
-      return res.status(400).json({ error: "Bad request." });
-    }
-
-    const newTask = new Task({
-      name,
-      description,
-      weekly,
-      done,
-      user_id,
-      accommodation_id,
-    });
-
-    await newTask.save();
-    return res.status(201).json({ task: newTask });
-  } catch (error: any) {
-    if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
-    }
-    return res.status(500).json({
-      error: "Internal server error.",
-    });
-  }
-};
-
-const updateTask = async (req: Request, res: Response): Promise<any> => {
+const updateTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -90,18 +79,18 @@ const updateTask = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json(task);
+    return res.status(200).json({ message: "Ok", data: task });
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const deleteTask = async (req: Request, res: Response): Promise<any> => {
+const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -115,18 +104,18 @@ const deleteTask = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json({ message: "OK." });
+    return res.sendStatus(204);
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
 export default {
   getAllTasks,
-  getTaskById,
   createTask,
-  updateTask,
-  deleteTask,
+  getTaskById,
+  updateTaskById,
+  deleteTaskById,
 };

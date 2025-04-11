@@ -3,6 +3,7 @@ import { FileModel, FileTypes } from "../models/file";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import mongoose from "mongoose";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -55,14 +56,10 @@ export const upload = multer({
 const uploadFile = async (req: Request, res: Response): Promise<any> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded." });
+      return res.status(400).json({ message: "No file uploaded." });
     }
 
     const { description, user_id } = req.body;
-
-    if (!description || !user_id) {
-      return res.status(400).json({ error: "Bad request." });
-    }
 
     const fileType =
       req.file.mimetype === "application/pdf" ? FileTypes.PDF : FileTypes.IMAGE;
@@ -77,13 +74,13 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newFile.save();
-    res.status(201).json({ file: newFile });
+    res.status(201).json({ message: "Ok", data: newFile });
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
     res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
@@ -91,6 +88,11 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
 const getFileById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
     const file = await FileModel.findById(id);
 
     if (!file) {
@@ -101,14 +103,19 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
     res.sendFile(filePath);
   } catch (error: any) {
     res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
 
-const deleteFile = async (req: Request, res: Response): Promise<any> => {
+const deleteFileById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
     const file = await FileModel.findById(id);
 
     if (!file) {
@@ -119,10 +126,10 @@ const deleteFile = async (req: Request, res: Response): Promise<any> => {
     fs.unlinkSync(filePath);
     await file.deleteOne();
 
-    res.status(200).json({ message: "OK." });
+    return res.sendStatus(204);
   } catch (error: any) {
     res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
@@ -130,5 +137,5 @@ const deleteFile = async (req: Request, res: Response): Promise<any> => {
 export default {
   uploadFile,
   getFileById,
-  deleteFile,
+  deleteFileById,
 };

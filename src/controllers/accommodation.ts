@@ -8,10 +8,10 @@ const getAllAccommodations = async (
 ): Promise<any> => {
   try {
     const accommodations = await Accommodation.find();
-    return res.status(200).json({ accommodations });
+    return res.status(200).json({ message: "Ok", data: accommodations });
   } catch (error: any) {
     return res.status(500).json({
-      error: "Internal server error.",
+      message: "Internal server error.",
     });
   }
 };
@@ -23,8 +23,10 @@ const createAccommodation = async (
   try {
     const { name, code, location, postalCode, country } = req.body;
 
-    if (!name || !code || !location || !postalCode || !country) {
-      return res.status(400).json({ message: "Bad request" });
+    const existCode = await Accommodation.findOne({ code });
+
+    if (existCode) {
+      return res.status(400).json({ message: "Code already exists" });
     }
 
     const newAccommodation = new Accommodation({
@@ -37,12 +39,12 @@ const createAccommodation = async (
 
     await newAccommodation.save();
 
-    return res.status(201).json({ accommodation: newAccommodation });
+    return res.status(201).json({ message: "Ok", data: newAccommodation });
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -56,13 +58,13 @@ const getAccommodationById = async (
       return res.status(400).json({ message: "Bad request." });
     }
 
-    const refund = await Accommodation.findById(id);
+    const accommodation = await Accommodation.findById(id);
 
-    if (!refund) {
+    if (!accommodation) {
       return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json(refund);
+    return res.status(200).json({ message: "Ok", data: accommodation });
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -75,6 +77,12 @@ const updateAccommodationById = async (
   try {
     const { name, code, location, postalCode, country } = req.body;
     const accommodationId = req.params.id;
+
+    const existCode = await Accommodation.findOne({ code });
+
+    if (existCode) {
+      return res.status(400).json({ message: "Code already exists" });
+    }
 
     const accommodation = await Accommodation.findByIdAndUpdate(
       accommodationId,
@@ -90,12 +98,12 @@ const updateAccommodationById = async (
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
-    return res.status(200).json({ accommodation });
+    return res.status(200).json({ message: "Ok", data: accommodation });
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -104,22 +112,26 @@ const deleteAccommodationById = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const accommodationId = req.params.id;
-    const accommodation =
-      await Accommodation.findByIdAndDelete(accommodationId);
+    const id = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
+    const accommodation = await Accommodation.findByIdAndDelete(id);
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
-    return res.status(200).json({ message: "OK" });
+    return res.sendStatus(204);
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error", error });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export default {
-  deleteAccommodationById,
-  updateAccommodationById,
-  getAccommodationById,
   getAllAccommodations,
   createAccommodation,
+  getAccommodationById,
+  updateAccommodationById,
+  deleteAccommodationById,
 };
