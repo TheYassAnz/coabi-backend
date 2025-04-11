@@ -59,6 +59,21 @@ describe("Task API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", taskId);
   });
 
+  test("GET /tasks/filter should return tasks by filter", async () => {
+    const params = {
+      weekly: true,
+      done: false,
+    };
+
+    const response = await request(app)
+      .get("/api/tasks/filter")
+      .query(params)
+      .expect(200);
+
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data.length).toBeGreaterThan(0);
+  });
+
   test("PUT /tasks/:id should update a task by ID", async () => {
     const updatedData = {
       name: "Updated Test Task",

@@ -124,7 +124,6 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, to_refund_start, to_refund_end, roomate_id } = req.query;
 
-    console.log("Query Params:", req.query);
     const params: QueryParamsRefunds = {};
 
     if (title) {
