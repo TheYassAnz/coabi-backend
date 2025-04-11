@@ -58,6 +58,21 @@ describe("Refund API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", refundId);
   });
 
+  test("GET /refunds/filter should return refunds by filter", async () => {
+    const params = {
+      to_refund_start: 99,
+      to_refund_end: 101,
+    };
+
+    const response = await request(app)
+      .get("/api/refunds/filter")
+      .query(params)
+      .expect(200);
+
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data.length).toBeGreaterThan(0);
+  });
+
   test("PUT /refunds/:id should update a refund by ID", async () => {
     const updatedData = {
       title: "Test Refund",
