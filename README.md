@@ -66,8 +66,10 @@ tsconfig.json
 
 Merci à tous les contributeurs de ce projet :
 
+<p>
 <img src="https://github.com/TheYassAnz.png" alt="Yassine ANZAR BASHA" width="50" height="50">
 <img src="https://github.com/AbubakarAliev.png" alt="Abubakar ALIEV" width="50" height="50">
 <img src="https://github.com/Maneldj.png" alt="Manel DJEDIR" width="50" height="50">
 <img src="https://github.com/NutNak.png" alt="Quentin DOULCET" width="50" height="50">
 <img src="https://github.com/geap1999.png" alt="Guillaume EAP" width="50" height="50">
+</p>
