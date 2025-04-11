@@ -2,6 +2,19 @@ import Event from "../models/event";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
+interface QueryParamsEvents {
+  title?: {
+    $regex: string;
+    $options: string;
+  };
+  planned_date?: {
+    $gte?: Date;
+    $lte?: Date;
+  };
+  end_date?: Date;
+  user_id?: string;
+}
+
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const events = await Event.find();
@@ -118,10 +131,45 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
+const filterEvents = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { title, planned_date_start, planned_date_end, user_id } = req.query;
+
+    const params: QueryParamsEvents = {};
+
+    if (title) {
+      params.title = { $regex: title as string, $options: "i" };
+    }
+
+    if (planned_date_start || planned_date_end) {
+      params.planned_date = {};
+      if (planned_date_start) {
+        params.planned_date.$gte = new Date(planned_date_start as string);
+      }
+      if (planned_date_end) {
+        params.planned_date.$lte = new Date(planned_date_end as string);
+      }
+    }
+
+    if (user_id) {
+      params.user_id = user_id as string;
+    }
+
+    const events = await Event.find(params);
+
+    return res.status(200).json({ message: "Ok", data: events });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
+};
+
 export default {
   getAllEvents,
   createEvent,
   getEventById,
   updateEventById,
   deleteEventById,
+  filterEvents,
 };
