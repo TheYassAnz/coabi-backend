@@ -66,20 +66,8 @@ tsconfig.json
 
 Merci à tous les contributeurs de ce projet :
 
-<p>
-   <a href="https://github.com/TheYassAnz" target="_blank">
-      <img src="https://github.com/TheYassAnz.png" alt="Yassine ANZAR BASHA" width="50" height="50" style="border-radius: 50%;">
-   </a>
-   <a href="https://github.com/AbubakarAliev" target="_blank">
-      <img src="https://github.com/AbubakarAliev.png" alt="Abubakar ALIEV" width="50" height="50" style="border-radius: 50%;">
-   </a>
-   <a href="https://github.com/Maneldj" target="_blank">
-      <img src="https://github.com/Maneldj.png" alt="Manel DJEDIR" width="50" height="50" style="border-radius: 50%;">
-   </a>
-   <a href="https://github.com/NutNak" target="_blank">
-      <img src="https://github.com/NutNak.png" alt="Quentin DOULCET" width="50" height="50" style="border-radius: 50%;">
-   </a>
-   <a href="https://github.com/geap1999" target="_blank">
-      <img src="https://github.com/geap1999.png" alt="Guillaume EAP" width="50" height="50" style="border-radius: 50%;">
-   </a>
-</p>
+<img src="https://github.com/TheYassAnz.png" alt="Yassine ANZAR BASHA" width="50" height="50">
+<img src="https://github.com/AbubakarAliev.png" alt="Abubakar ALIEV" width="50" height="50">
+<img src="https://github.com/Maneldj.png" alt="Manel DJEDIR" width="50" height="50">
+<img src="https://github.com/NutNak.png" alt="Quentin DOULCET" width="50" height="50">
+<img src="https://github.com/geap1999.png" alt="Guillaume EAP" width="50" height="50">
