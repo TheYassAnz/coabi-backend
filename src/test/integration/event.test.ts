@@ -25,8 +25,9 @@ describe("Event API Integration Tests", () => {
       .send(eventData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("_id");
-    eventId = response.body._id;
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("title", "Test Event");
+    eventId = response.body.data._id;
   });
 
   test("POST /events should return 400 for invalid data", async () => {
@@ -44,19 +45,20 @@ describe("Event API Integration Tests", () => {
       .send(invalidEventData)
       .expect(400);
 
-    expect(response.body).toHaveProperty("error", "Bad request");
+    expect(response.body).toHaveProperty("message", "Bad request");
   });
 
   test("GET /events should return all events", async () => {
     const response = await request(app).get("/api/events").expect(200);
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(Array.isArray(response.body.data)).toBe(true);
   });
 
   test("GET /events/:id should return an event by ID", async () => {
     const response = await request(app)
       .get(`/api/events/${eventId}`)
       .expect(200);
-    expect(response.body).toHaveProperty("_id", eventId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", eventId);
   });
 
   test("PUT /events/:id should update an event by ID", async () => {
@@ -70,14 +72,13 @@ describe("Event API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("event");
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", eventId);
+    expect(response.body.data).toHaveProperty("title", "Updated Test Event");
   });
 
   test("DELETE /events/:id should delete an event by ID", async () => {
-    const response = await request(app)
-      .delete(`/api/events/${eventId}`)
-      .expect(200);
-    expect(response.body).toHaveProperty("message", "OK.");
+    await request(app).delete(`/api/events/${eventId}`).expect(204);
 
     await request(app).get(`/api/events/${eventId}`).expect(404);
   });

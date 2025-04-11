@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../../app";
+import e from "express";
 
 describe("Refund API Integration Tests", () => {
   let refundId = "";
@@ -23,8 +24,9 @@ describe("Refund API Integration Tests", () => {
       .send(refundData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("_id");
-    refundId = response.body._id;
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("title", "Test Refund");
+    refundId = response.body.data._id;
   });
 
   test("POST /refunds should return 400 for invalid data", async () => {
@@ -40,19 +42,20 @@ describe("Refund API Integration Tests", () => {
       .send(invalidRefundData)
       .expect(400);
 
-    expect(response.body).toHaveProperty("error", "Bad request");
+    expect(response.body).toHaveProperty("message", "Bad request");
   });
 
   test("GET /refunds should return all refunds", async () => {
     const response = await request(app).get("/api/refunds").expect(200);
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(Array.isArray(response.body.data)).toBe(true);
   });
 
   test("GET /refunds/:id should return a refund by ID", async () => {
     const response = await request(app)
       .get(`/api/refunds/${refundId}`)
       .expect(200);
-    expect(response.body).toHaveProperty("_id", refundId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", refundId);
   });
 
   test("PUT /refunds/:id should update a refund by ID", async () => {
@@ -66,14 +69,13 @@ describe("Refund API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("_id", refundId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", refundId);
+    expect(response.body.data).toHaveProperty("to_refund", 0);
   });
 
   test("DELETE /refunds/:id should delete a refund by ID", async () => {
-    const response = await request(app)
-      .delete(`/api/refunds/${refundId}`)
-      .expect(200);
-    expect(response.body).toHaveProperty("message", "OK.");
+    await request(app).delete(`/api/refunds/${refundId}`).expect(204);
 
     await request(app).get(`/api/refunds/${refundId}`).expect(404);
   });

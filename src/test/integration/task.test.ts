@@ -25,8 +25,9 @@ describe("Task API Integration Tests", () => {
       .send(taskData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("_id");
-    taskId = response.body._id;
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("name", "Test Task");
+    taskId = response.body.data._id;
   });
 
   test("POST /tasks should return 400 if required fields are missing", async () => {
@@ -44,17 +45,18 @@ describe("Task API Integration Tests", () => {
       .send(invalidTaskData)
       .expect(400);
 
-    expect(response.body).toHaveProperty("error", "Bad request");
+    expect(response.body).toHaveProperty("message", "Bad request");
   });
 
   test("GET /tasks should return all tasks", async () => {
     const response = await request(app).get("/api/tasks").expect(200);
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(Array.isArray(response.body.data)).toBe(true);
   });
 
   test("GET /tasks/:id should return a task by ID", async () => {
     const response = await request(app).get(`/api/tasks/${taskId}`).expect(200);
-    expect(response.body).toHaveProperty("_id", taskId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", taskId);
   });
 
   test("PUT /tasks/:id should update a task by ID", async () => {
@@ -69,14 +71,13 @@ describe("Task API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("_id", taskId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", taskId);
+    expect(response.body.data).toHaveProperty("done", true);
   });
 
   test("DELETE /tasks/:id should delete a task by ID", async () => {
-    const response = await request(app)
-      .delete(`/api/tasks/${taskId}`)
-      .expect(200);
-    expect(response.body).toHaveProperty("message", "OK.");
+    await request(app).delete(`/api/tasks/${taskId}`).expect(204);
 
     await request(app).get(`/api/tasks/${taskId}`).expect(404);
   });
