@@ -14,11 +14,11 @@ describe("User API Integration Tests", () => {
     const userData = {
       firstname: "John",
       lastname: "Doe",
-      username: "JOJO",
-      password: "password123",
+      username: "JOJOJO",
+      password: "password1234",
       age: 30,
       description: "Test user",
-      email: "jojo@example.com",
+      email: "jojojo@example.com",
       phone_number: "1234567890",
       profile_picture_id: "67e922f5f031d41cd1da4fe4",
       accommodation_id: "67e922f5f031d41cd1da4fe4",
@@ -29,8 +29,9 @@ describe("User API Integration Tests", () => {
       .send(userData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("_id");
-    userId = response.body._id;
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("firstname", "John");
+    userId = response.body.data._id;
   });
 
   test("POST /register should return 400 if required fields are missing", async () => {
@@ -46,17 +47,18 @@ describe("User API Integration Tests", () => {
       .send(invalidUserData)
       .expect(400);
 
-    expect(response.body).toHaveProperty("error", "Bad request");
+    expect(response.body).toHaveProperty("message", "Bad request");
   });
 
   test("GET /users should return all users", async () => {
     const response = await request(app).get("/api/users").expect(200);
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(Array.isArray(response.body.data)).toBe(true);
   });
 
   test("GET /users/:id should return a user by ID", async () => {
     const response = await request(app).get(`/api/users/${userId}`).expect(200);
-    expect(response.body).toHaveProperty("_id", userId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", userId);
   });
 
   test("PUT /users/:id should update a user by ID", async () => {
@@ -71,14 +73,13 @@ describe("User API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("_id", userId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", userId);
+    expect(response.body.data).toHaveProperty("firstname", "Jane");
   });
 
   test("DELETE /users/:id should delete a user by ID", async () => {
-    const response = await request(app)
-      .delete(`/api/users/${userId}`)
-      .expect(200);
-    expect(response.body).toHaveProperty("message", "OK.");
+    await request(app).delete(`/api/users/${userId}`).expect(204);
 
     await request(app).get(`/api/users/${userId}`).expect(404);
   });

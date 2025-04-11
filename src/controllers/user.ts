@@ -6,18 +6,37 @@ import mongoose from "mongoose";
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const users = await User.find();
-    return res.json(users);
+    return res.json({ message: "Ok", data: users });
   } catch (error) {
-    return res.status(500).json({ error: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
 
-const updateUser = async (req: Request, res: Response): Promise<any> => {
+const getUserById = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request." });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Not found." });
+    }
+
+    return res.status(200).json({ message: "Ok", data: user });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+const updateUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Bad request." });
+      return res.status(400).json({ message: "Bad request." });
     }
 
     let updatedData = req.body;
@@ -33,56 +52,37 @@ const updateUser = async (req: Request, res: Response): Promise<any> => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: "Not found." });
+      return res.status(404).json({ message: "Not found." });
     }
 
-    return res.status(200).json(user);
+    return res.status(200).json({ message: "Ok", data: user });
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ error: "Bad request" });
+      return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ error: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
 
-const getUserById = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Bad request." });
-    }
-
-    const user = await User.findById(id);
-
-    if (!user) {
-      return res.status(404).json({ error: "Not found." });
-    }
-
-    return res.status(200).json(user);
-  } catch (error: any) {
-    return res.status(500).json({ error: "Internal server error." });
-  }
-};
-
-const deleteUser = async (req: Request, res: Response): Promise<any> => {
+const deleteUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Bad request." });
+      return res.status(400).json({ message: "Bad request." });
     }
 
     await User.findByIdAndDelete(id);
 
-    return res.status(200).json({ message: "OK." });
+    return res.sendStatus(204);
   } catch (error: any) {
-    return res.status(500).json({ error: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
 
 export default {
   getAllUsers,
-  updateUser,
   getUserById,
-  deleteUser,
+  updateUserById,
+  deleteUserById,
 };

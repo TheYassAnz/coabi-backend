@@ -13,7 +13,7 @@ describe("Accommodation API Integration Tests", () => {
   test("POST /accommodations should create a new accommodation", async () => {
     const accommodationData = {
       name: "Test Accommodation",
-      code: "TST123",
+      code: "TST1234",
       location: "Test Location",
       postalCode: "12345",
       country: "Test Country",
@@ -24,8 +24,9 @@ describe("Accommodation API Integration Tests", () => {
       .send(accommodationData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("_id");
-    accommodationId = response.body._id;
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("name", "Test Accommodation");
+    accommodationId = response.body.data._id;
   });
 
   test("POST /accommodations should return 400 for invalid data", async () => {
@@ -39,12 +40,12 @@ describe("Accommodation API Integration Tests", () => {
       .send(invalidData)
       .expect(400);
 
-    expect(response.body).toHaveProperty("error");
+    expect(response.body).toHaveProperty("message", "Bad request");
   });
 
   test("GET /accommodations should return all accommodations", async () => {
     const response = await request(app).get("/api/accommodations").expect(200);
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(Array.isArray(response.body.data)).toBe(true);
   });
 
   test("GET /accommodations/:id should return an accommodation by ID", async () => {
@@ -52,7 +53,8 @@ describe("Accommodation API Integration Tests", () => {
       .get(`/api/accommodations/${accommodationId}`)
       .expect(200);
 
-    expect(response.body).toHaveProperty("_id", accommodationId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", accommodationId);
   });
 
   test("PUT /accommodations/:id should update an accommodation by ID", async () => {
@@ -66,15 +68,18 @@ describe("Accommodation API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("_id", accommodationId);
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", accommodationId);
+    expect(response.body.data).toHaveProperty(
+      "name",
+      "Updated Test Accommodation",
+    );
   });
 
   test("DELETE /accommodations/:id should delete an accommodation by ID", async () => {
-    const response = await request(app)
+    await request(app)
       .delete(`/api/accommodations/${accommodationId}`)
-      .expect(200);
-
-    expect(response.body).toHaveProperty("message", "OK.");
+      .expect(204);
 
     await request(app)
       .get(`/api/accommodations/${accommodationId}`)
