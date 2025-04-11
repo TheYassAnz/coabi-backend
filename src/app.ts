@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
+import mongoSanitize from "express-mongo-sanitize";
 
 const clientOptions = {
   serverApi: { version: "1" as const, strict: true, deprecationErrors: true },
@@ -19,7 +20,7 @@ mongoose
 const app: Application = express();
 
 app.use(express.json());
-app.use(express.json());
+app.use(mongoSanitize());
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
