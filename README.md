@@ -64,7 +64,23 @@ tsconfig.json
 
 ## Auteurs
 
-- **Yassine ANZAR BASHA**
-- **Abubakar ALIEV**
-- **Quentin DOULCET**
-- **Guillaume EAP**
+Merci à tous les contributeurs de ce projet :
+
+<p>
+   <a href="https://github.com/TheYassAnz" target="_blank">
+      <img src="https://github.com/TheYassAnz.png"  alt="Yassine ANZAR BASHA" style="border-radius: 50%; width: 50px; height: 50px;">
+   </a>
+   <a href="https://github.com/AbubakarAliev" target="_blank">
+      <img src="https://github.com/AbubakarAliev.png" alt="Abubakar ALIEV" style="border-radius: 50%; width: 50px; height: 50px;">
+   </a>
+   <a href="https://github.com/Maneldj" target="_blank">
+      <img src="https://github.com/Maneldj.png" alt="Manel DJEDIR" style="border-radius: 50%; width: 50px; height: 50px;">
+   </a>
+   <a href="https://github.com/NutNak" target="_blank">
+      <img src="https://github.com/NutNak.png" alt="Quentin DOULCET" style="border-radius: 50%; width: 50px; height: 50px;">
+   </a>
+   <a href="https://github.com/geap1999" target="_blank">
+      <img src="https://github.com/geap1999.png" alt="Guillaume EAP" style="border-radius: 50%; width: 50px; height: 50px;">
+   </a>
+   
+</p>
