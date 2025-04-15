@@ -80,7 +80,7 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
     res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -103,7 +103,7 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
     res.sendFile(filePath);
   } catch (error: any) {
     res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -129,7 +129,7 @@ const deleteFileById = async (req: Request, res: Response): Promise<any> => {
     return res.sendStatus(204);
   } catch (error: any) {
     res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };

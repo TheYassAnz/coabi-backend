@@ -19,28 +19,60 @@ const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
     const refunds = await Refund.find();
     return res.json({ message: "Ok", data: refunds });
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const createRefund = async (req: Request, res: Response): Promise<any> => {
+export const splitRefund = (to_split: number, roomates: number): number => {
+  return parseFloat((to_split / (roomates + 1)).toFixed(2));
+};
+
+const createRefund = async (
+  title: string,
+  to_refund: number,
+  user_id: string,
+  roomate_id: string,
+): Promise<any> => {
   try {
-    const { title, to_refund, user_id, roomate_id } = req.body;
-
-    if (to_refund < 0) {
-      return res.status(400).json({ message: "Bad request" });
-    }
-
     const newRefund = new Refund({ title, to_refund, user_id, roomate_id });
 
     await newRefund.save();
 
-    return res.status(201).json({ message: "Ok", data: newRefund });
+    return newRefund;
   } catch (error: any) {
     if (error.name === "ValidationError") {
+      throw new Error("ValidationError");
+    }
+    throw new Error("InternalServerError");
+  }
+};
+
+const createRefunds = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { title, to_split, user_id, roomate_ids } = req.body; // roomate_ids is a string[]
+
+    if (to_split < 0) {
       return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ message: "Internal server error." });
+
+    if (roomate_ids.length === 0) {
+      return res.status(400).json({ message: "Bad request" });
+    }
+
+    const to_refund = splitRefund(to_split, roomate_ids.length);
+
+    const newRefunds = await Promise.all(
+      roomate_ids.map(async (roomate_id: string) => {
+        return await createRefund(title, to_refund, user_id, roomate_id);
+      }),
+    );
+
+    return res.status(201).json({ message: "Ok", data: newRefunds });
+  } catch (error: any) {
+    if (error.message === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -94,7 +126,7 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -116,7 +148,7 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
     await refund.deleteOne();
     return res.sendStatus(204);
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -149,14 +181,14 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Ok", data: refunds });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
 
 export default {
   getAllRefunds,
-  createRefund,
+  createRefunds,
   getRefundById,
   updateRefundById,
   deleteRefundById,

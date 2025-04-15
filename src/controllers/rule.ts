@@ -8,7 +8,7 @@ const getAllRules = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Ok", data: rules });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -30,7 +30,7 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -52,7 +52,7 @@ const getRuleById = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Ok", data: rule });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -81,7 +81,7 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -103,7 +103,7 @@ const deleteRuleById = async (req: Request, res: Response): Promise<any> => {
     return res.sendStatus(204);
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };

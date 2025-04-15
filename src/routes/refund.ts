@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", refundCtrl.getAllRefunds);
 router.get("/filter", refundCtrl.filterRefunds);
-router.post("/", refundCtrl.createRefund);
+router.post("/", refundCtrl.createRefunds);
 router.get("/:id", refundCtrl.getRefundById);
 router.put("/:id", refundCtrl.updateRefundById);
 router.delete("/:id", refundCtrl.deleteRefundById);

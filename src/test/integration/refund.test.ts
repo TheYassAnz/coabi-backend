@@ -14,9 +14,9 @@ describe("Refund API Integration Tests", () => {
   test("POST /refunds should create a new refund", async () => {
     const refundData = {
       title: "Test Refund",
-      to_refund: 100,
+      to_split: 200,
       user_id: "67ecf50fe1ec65f57a487989",
-      roomate_id: "67e922f5f031d41cd1da4fe4",
+      roomate_ids: ["67e922f5f031d41cd1da4fe4"],
     };
 
     const response = await request(app)
@@ -25,16 +25,16 @@ describe("Refund API Integration Tests", () => {
       .expect(201);
 
     expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("title", "Test Refund");
-    refundId = response.body.data._id;
+    expect(response.body.data[0]).toHaveProperty("title", "Test Refund");
+    refundId = response.body.data[0]._id;
   });
 
   test("POST /refunds should return 400 for invalid data", async () => {
     const invalidRefundData = {
       title: "",
-      to_refund: -100,
+      to_split: -100,
       user_id: "",
-      roomate_id: "",
+      roomate_ids: [],
     };
 
     const response = await request(app)
