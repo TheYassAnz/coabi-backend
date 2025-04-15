@@ -55,13 +55,13 @@ const getAccommodationById = async (
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const accommodation = await Accommodation.findById(id);
 
     if (!accommodation) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Not found" });
     }
 
     return res.status(200).json({ message: "Ok", data: accommodation });
@@ -115,7 +115,7 @@ const deleteAccommodationById = async (
     const id = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const accommodation = await Accommodation.findByIdAndDelete(id);

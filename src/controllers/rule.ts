@@ -40,13 +40,13 @@ const getRuleById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const rule = await Rule.findById(id);
 
     if (!rule) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Not found" });
     }
 
     return res.status(200).json({ message: "Ok", data: rule });
@@ -62,7 +62,7 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const rule = await Rule.findByIdAndUpdate(
@@ -72,7 +72,7 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
     );
 
     if (!rule) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Not found" });
     }
 
     return res.status(200).json({ message: "Ok", data: rule });
@@ -91,13 +91,13 @@ const deleteRuleById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const rule = await Rule.findByIdAndDelete(id);
 
     if (!rule) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Not found" });
     }
 
     return res.sendStatus(204);

@@ -4,6 +4,7 @@ import eventCtrl from "../controllers/event";
 const router = express.Router();
 
 router.get("/", eventCtrl.getAllEvents);
+router.get("/filter", eventCtrl.filterEvents);
 router.post("/", eventCtrl.createEvent);
 router.get("/:id", eventCtrl.getEventById);
 router.put("/:id", eventCtrl.updateEventById);

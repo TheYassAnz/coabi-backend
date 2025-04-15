@@ -90,13 +90,13 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Not found" });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
@@ -113,13 +113,13 @@ const deleteFileById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request." });
+      return res.status(400).json({ message: "Bad request" });
     }
 
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Not found" });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
