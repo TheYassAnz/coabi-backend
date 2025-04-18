@@ -58,7 +58,7 @@ describe("Rule API Integration Tests", () => {
     };
 
     const response = await request(app)
-      .put(`/api/rules/${ruleId}`)
+      .patch(`/api/rules/${ruleId}`)
       .send(updatedData)
       .expect(200);
 

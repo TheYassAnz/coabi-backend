@@ -82,7 +82,7 @@ describe("Task API Integration Tests", () => {
     };
 
     const response = await request(app)
-      .put(`/api/tasks/${taskId}`)
+      .patch(`/api/tasks/${taskId}`)
       .send(updatedData)
       .expect(200);
 

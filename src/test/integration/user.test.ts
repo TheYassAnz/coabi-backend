@@ -83,7 +83,7 @@ describe("User API Integration Tests", () => {
     };
 
     const response = await request(app)
-      .put(`/api/users/${userId}`)
+      .patch(`/api/users/${userId}`)
       .send(updatedData)
       .expect(200);
 
