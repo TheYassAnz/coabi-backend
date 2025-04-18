@@ -11,7 +11,7 @@ const getAllAccommodations = async (
     return res.status(200).json({ message: "Ok", data: accommodations });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };

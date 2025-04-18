@@ -52,7 +52,7 @@ const register = async (req: Request, res: Response): Promise<any> => {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -83,7 +83,7 @@ const login = async (req: Request, res: Response) => {
     const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: "1h" });
     res.status(200).json({ message: "OK", data: token });
   } catch (error: any) {
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

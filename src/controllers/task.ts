@@ -18,7 +18,7 @@ const getAllTasks = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Ok", data: tasks });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -44,7 +44,7 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -66,7 +66,7 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Ok", data: task });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -95,7 +95,7 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -117,7 +117,7 @@ const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
     return res.sendStatus(204);
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
@@ -149,7 +149,7 @@ const filterTasks = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Ok", data: events });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error",
     });
   }
 };
