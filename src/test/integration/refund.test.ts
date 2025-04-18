@@ -80,7 +80,7 @@ describe("Refund API Integration Tests", () => {
     };
 
     const response = await request(app)
-      .put(`/api/refunds/${refundId}`)
+      .patch(`/api/refunds/${refundId}`)
       .send(updatedData)
       .expect(200);
 

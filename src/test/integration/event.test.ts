@@ -83,7 +83,7 @@ describe("Event API Integration Tests", () => {
     };
 
     const response = await request(app)
-      .put(`/api/events/${eventId}`)
+      .patch(`/api/events/${eventId}`)
       .send(updatedData)
       .expect(200);
 
