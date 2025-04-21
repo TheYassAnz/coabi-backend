@@ -2,7 +2,7 @@ import { Schema, model, Types, Document } from "mongoose";
 
 interface Event extends Document {
   title: string;
-  description: string;
+  description: string | null;
   planned_date: Date;
   end_date: Date;
   user_id: Types.ObjectId;
@@ -11,7 +11,7 @@ interface Event extends Document {
 
 const eventSchema = new Schema<Event>({
   title: { type: String, required: true, maxLength: 50 },
-  description: { type: String, required: true },
+  description: { type: String, required: false, default: null },
   planned_date: { type: Date, required: true },
   end_date: { type: Date, required: true },
   user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
