@@ -2,25 +2,28 @@ import { Schema, model, Types, Document } from "mongoose";
 
 interface Event extends Document {
   title: string;
-  description: string | null;
-  planned_date: Date;
-  end_date: Date;
-  user_id: Types.ObjectId;
-  accommodation_id: Types.ObjectId;
+  description: string;
+  plannedDate: Date;
+  endDate: Date;
+  userId: Types.ObjectId;
+  accommodationId: Types.ObjectId;
 }
 
-const eventSchema = new Schema<Event>({
-  title: { type: String, required: true, maxLength: 50 },
-  description: { type: String, required: false, default: null },
-  planned_date: { type: Date, required: true },
-  end_date: { type: Date, required: true },
-  user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  accommodation_id: {
-    type: Schema.Types.ObjectId,
-    ref: "Accommodation",
-    required: true,
+const eventSchema = new Schema<Event>(
+  {
+    title: { type: String, required: true, maxLength: 50 },
+    description: { type: String, required: false, default: null },
+    plannedDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      required: true,
+    },
   },
-});
+  { timestamps: true },
+);
 
 const EventModel = model<Event>("Event", eventSchema);
 

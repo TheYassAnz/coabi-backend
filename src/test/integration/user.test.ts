@@ -12,16 +12,16 @@ describe("User API Integration Tests", () => {
 
   test("POST /auth/register should create a new user", async () => {
     const userData = {
-      firstname: "John",
-      lastname: "Doe",
+      firstName: "John",
+      lastName: "Doe",
       username: "JOJOJO",
       password: "password1234",
       age: 30,
       description: "Test user",
       email: "jojojo@example.com",
-      phone_number: "1234567890",
-      profile_picture_id: "67e922f5f031d41cd1da4fe4",
-      accommodation_id: "67e922f5f031d41cd1da4fe4",
+      phoneNumber: "1234567890",
+      profilePictureId: "67e922f5f031d41cd1da4fe4",
+      accommodationId: "67e922f5f031d41cd1da4fe4",
     };
 
     const response = await request(app)
@@ -30,7 +30,7 @@ describe("User API Integration Tests", () => {
       .expect(201);
 
     expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("firstname", "John");
+    expect(response.body.data).toHaveProperty("firstName", "John");
     userId = response.body.data._id;
   });
 
@@ -39,7 +39,7 @@ describe("User API Integration Tests", () => {
       age: 30,
       description: "Test user",
       email: "jojo@example.com",
-      phone_number: "1234567890",
+      phoneNumber: "1234567890",
     };
 
     const response = await request(app)
@@ -77,7 +77,7 @@ describe("User API Integration Tests", () => {
 
   test("PUT /users/:id should update a user by ID", async () => {
     const updatedData = {
-      firstname: "Jane",
+      firstName: "Jane",
       age: 28,
       description: "Updated test user",
     };
@@ -89,7 +89,7 @@ describe("User API Integration Tests", () => {
 
     expect(response.body).toHaveProperty("message", "Ok");
     expect(response.body.data).toHaveProperty("_id", userId);
-    expect(response.body.data).toHaveProperty("firstname", "Jane");
+    expect(response.body.data).toHaveProperty("firstName", "Jane");
   });
 
   test("DELETE /users/:id should delete a user by ID", async () => {

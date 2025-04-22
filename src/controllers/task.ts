@@ -9,7 +9,7 @@ interface QueryParamsTasks {
   };
   weekly?: boolean;
   done?: boolean;
-  user_id?: string;
+  userId?: string;
 }
 
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
@@ -25,7 +25,7 @@ const getAllTasks = async (req: Request, res: Response): Promise<any> => {
 
 const createTask = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, description, weekly, done, user_id, accommodation_id } =
+    const { name, description, weekly, done, userId, accommodationId } =
       req.body;
 
     const newTask = new Task({
@@ -33,8 +33,8 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
       description,
       weekly,
       done,
-      user_id,
-      accommodation_id,
+      userId,
+      accommodationId,
     });
 
     await newTask.save();
@@ -124,7 +124,7 @@ const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
 
 const filterTasks = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, weekly, done, user_id } = req.query;
+    const { name, weekly, done, userId } = req.query;
 
     const params: QueryParamsTasks = {};
 
@@ -140,8 +140,8 @@ const filterTasks = async (req: Request, res: Response): Promise<any> => {
       params.done = done === "true";
     }
 
-    if (user_id) {
-      params.user_id = user_id as string;
+    if (userId) {
+      params.userId = userId as string;
     }
 
     const events = await Task.find(params);

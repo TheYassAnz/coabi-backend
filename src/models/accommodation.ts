@@ -8,14 +8,20 @@ interface Accommodation extends Document {
   country: string;
 }
 
-const accommodationSchema = new Schema<Accommodation>({
-  name: { type: String, required: true },
-  code: { type: String, required: true, unique: true },
-  location: { type: String, required: true },
-  postalCode: { type: Number, required: true },
-  country: { type: String, required: true },
-});
+const accommodationSchema = new Schema<Accommodation>(
+  {
+    name: { type: String, required: true },
+    code: { type: String, required: true, unique: true },
+    location: { type: String, required: true },
+    postalCode: { type: Number, required: true },
+    country: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
-const AccommodationModel = model<Accommodation>("Accommodation", accommodationSchema);
+const AccommodationModel = model<Accommodation>(
+  "Accommodation",
+  accommodationSchema,
+);
 
 export default AccommodationModel;

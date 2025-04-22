@@ -5,8 +5,8 @@ import mongoose from "mongoose";
 
 interface QueryParamsUsers {
   $or?: {
-    firstname?: { $regex: string; $options: string };
-    lastname?: { $regex: string; $options: string };
+    firstName?: { $regex: string; $options: string };
+    lastName?: { $regex: string; $options: string };
     username?: { $regex: string; $options: string };
   }[];
 }
@@ -15,7 +15,7 @@ const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const users = await User.find();
     return res.json({ message: "Ok", data: users });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -97,8 +97,8 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
     if (name) {
       const regex = { $regex: name as string, $options: "i" };
       params.$or = [
-        { firstname: regex },
-        { lastname: regex },
+        { firstName: regex },
+        { lastName: regex },
         { username: regex },
       ];
     }

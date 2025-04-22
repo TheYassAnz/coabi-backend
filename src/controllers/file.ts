@@ -59,7 +59,7 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "No file uploaded." });
     }
 
-    const { description, user_id } = req.body;
+    const { description, userId } = req.body;
 
     const fileType =
       req.file.mimetype === "application/pdf" ? FileTypes.PDF : FileTypes.IMAGE;
@@ -70,7 +70,7 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
       description,
       type: fileType,
       size: req.file.size,
-      user_id,
+      userId,
     });
 
     await newFile.save();

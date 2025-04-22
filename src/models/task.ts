@@ -5,22 +5,25 @@ interface Task extends Document {
   description: string | null;
   weekly: boolean;
   done: boolean;
-  user_id: Types.ObjectId;
-  accommodation_id: Types.ObjectId;
+  userId: Types.ObjectId;
+  accommodationId: Types.ObjectId;
 }
 
-const taskSchema = new Schema<Task>({
-  name: { type: String, required: true },
-  description: { type: String, required: false, default: null },
-  weekly: { type: Boolean, required: true },
-  done: { type: Boolean, required: true },
-  user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  accommodation_id: {
-    type: Schema.Types.ObjectId,
-    ref: "Accommodation",
-    required: true,
+const taskSchema = new Schema<Task>(
+  {
+    name: { type: String, required: true },
+    description: { type: String, required: false, default: null },
+    weekly: { type: Boolean, required: true },
+    done: { type: Boolean, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      required: true,
+    },
   },
-});
+  { timestamps: true },
+);
 
 const TaskModel = model<Task>("Task", taskSchema);
 

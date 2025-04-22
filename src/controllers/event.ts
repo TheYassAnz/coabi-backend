@@ -7,12 +7,12 @@ interface QueryParamsEvents {
     $regex: string;
     $options: string;
   };
-  planned_date?: {
+  plannedDate?: {
     $gte?: Date;
     $lte?: Date;
   };
-  end_date?: Date;
-  user_id?: string;
+  endDate?: Date;
+  userId?: string;
 }
 
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
@@ -31,19 +31,19 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
     const {
       title,
       description,
-      planned_date,
-      end_date,
-      user_id,
-      accommodation_id,
+      plannedDate,
+      endDate,
+      userId,
+      accommodationId,
     } = req.body;
 
     const newEvent = new Event({
       title,
       description,
-      planned_date: new Date(planned_date),
-      end_date: new Date(end_date),
-      user_id,
-      accommodation_id,
+      plannedDate: new Date(plannedDate),
+      endDate: new Date(endDate),
+      userId,
+      accommodationId,
     });
 
     await newEvent.save();
@@ -133,7 +133,7 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
 
 const filterEvents = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, planned_date_start, planned_date_end, user_id } = req.query;
+    const { title, plannedDateStart, plannedDateEnd, userId } = req.query;
 
     const params: QueryParamsEvents = {};
 
@@ -141,18 +141,18 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
       params.title = { $regex: title as string, $options: "i" };
     }
 
-    if (planned_date_start || planned_date_end) {
-      params.planned_date = {};
-      if (planned_date_start) {
-        params.planned_date.$gte = new Date(planned_date_start as string);
+    if (plannedDateStart || plannedDateEnd) {
+      params.plannedDate = {};
+      if (plannedDateStart) {
+        params.plannedDate.$gte = new Date(plannedDateStart as string);
       }
-      if (planned_date_end) {
-        params.planned_date.$lte = new Date(planned_date_end as string);
+      if (plannedDateEnd) {
+        params.plannedDate.$lte = new Date(plannedDateEnd as string);
       }
     }
 
-    if (user_id) {
-      params.user_id = user_id as string;
+    if (userId) {
+      params.userId = userId as string;
     }
 
     const events = await Event.find(params);

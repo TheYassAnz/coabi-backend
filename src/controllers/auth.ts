@@ -6,16 +6,16 @@ import jwt from "jsonwebtoken";
 const register = async (req: Request, res: Response): Promise<any> => {
   try {
     const {
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       username,
       password,
       age,
       description,
       email,
-      phone_number,
-      profile_picture_id,
-      accommodation_id,
+      phoneNumber,
+      profilePictureId,
+      accommodationId,
     } = req.body;
 
     const existUsername = await User.findOne({ username });
@@ -33,16 +33,16 @@ const register = async (req: Request, res: Response): Promise<any> => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       username,
       password: hashedPassword,
       age,
       description,
       email,
-      phone_number,
-      profile_picture_id,
-      accommodation_id,
+      phoneNumber,
+      profilePictureId,
+      accommodationId,
     });
 
     await newUser.save();
