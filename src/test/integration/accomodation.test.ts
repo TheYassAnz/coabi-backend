@@ -64,7 +64,7 @@ describe("Accommodation API Integration Tests", () => {
     };
 
     const response = await request(app)
-      .put(`/api/accommodations/${accommodationId}`)
+      .patch(`/api/accommodations/${accommodationId}`)
       .send(updatedData)
       .expect(200);
 
