@@ -32,7 +32,6 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
       name,
       description,
       weekly,
-      done,
       userId,
       accommodationId,
     });
