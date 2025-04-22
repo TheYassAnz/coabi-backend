@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 import mongoSanitize from "express-mongo-sanitize";
+import { xssSanitizer } from "./middleware/xssSanitizer";
+import helmet from "helmet";
 
 const clientOptions = {
   serverApi: { version: "1" as const, strict: true, deprecationErrors: true },
@@ -20,7 +22,9 @@ mongoose
 const app: Application = express();
 
 app.use(express.json());
-app.use(mongoSanitize());
+app.use(mongoSanitize()); // Protect against NoSQL injection
+app.use(xssSanitizer); // Sanitize user inputs to prevent XSS
+app.use(helmet()); // Set security headers to protect the frontend from XSS
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
