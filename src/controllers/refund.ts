@@ -11,7 +11,7 @@ interface QueryParamsRefunds {
     $gte?: number;
     $lte?: number;
   };
-  roomate_id?: string;
+  roommate_id?: string;
 }
 
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
@@ -23,18 +23,18 @@ const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export const splitRefund = (to_split: number, roomates: number): number => {
-  return parseFloat((to_split / (roomates + 1)).toFixed(2));
+export const splitRefund = (to_split: number, roommates: number): number => {
+  return parseFloat((to_split / (roommates + 1)).toFixed(2));
 };
 
 const createRefund = async (
   title: string,
   to_refund: number,
   user_id: string,
-  roomate_id: string,
+  roommate_id: string,
 ): Promise<any> => {
   try {
-    const newRefund = new Refund({ title, to_refund, user_id, roomate_id });
+    const newRefund = new Refund({ title, to_refund, user_id, roommate_id });
 
     await newRefund.save();
 
@@ -49,21 +49,21 @@ const createRefund = async (
 
 const createRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, to_split, user_id, roomate_ids } = req.body; // roomate_ids is a string[]
+    const { title, to_split, user_id, roommate_ids } = req.body; // roommate_ids is a string[]
 
     if (to_split < 0) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (roomate_ids.length === 0) {
+    if (roommate_ids.length === 0) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const to_refund = splitRefund(to_split, roomate_ids.length);
+    const to_refund = splitRefund(to_split, roommate_ids.length);
 
     const newRefunds = await Promise.all(
-      roomate_ids.map(async (roomate_id: string) => {
-        return await createRefund(title, to_refund, user_id, roomate_id);
+      roommate_ids.map(async (roommate_id: string) => {
+        return await createRefund(title, to_refund, user_id, roommate_id);
       }),
     );
 
@@ -154,7 +154,7 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
 
 const filterRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, to_refund_start, to_refund_end, roomate_id } = req.query;
+    const { title, to_refund_start, to_refund_end, roommate_id } = req.query;
 
     const params: QueryParamsRefunds = {};
 
@@ -172,8 +172,8 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
       }
     }
 
-    if (roomate_id) {
-      params.roomate_id = roomate_id as string;
+    if (roommate_id) {
+      params.roommate_id = roommate_id as string;
     }
 
     const refunds = await Refund.find(params);
