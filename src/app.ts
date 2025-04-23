@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 import mongoSanitize from "express-mongo-sanitize";
-import { xssSanitizer } from "./middleware/xssSanitizer";
+import { xssSanitizer } from "./middleware/xss-sanitizer";
 import helmet from "helmet";
 import cors from "cors";
 
