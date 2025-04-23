@@ -11,8 +11,13 @@ interface Task extends Document {
 
 const taskSchema = new Schema<Task>(
   {
-    name: { type: String, required: true },
-    description: { type: String, required: false, default: null },
+    name: { type: String, required: true, maxlength: 50 },
+    description: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 200,
+    },
     weekly: { type: Boolean, required: true },
     done: { type: Boolean, required: false, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },

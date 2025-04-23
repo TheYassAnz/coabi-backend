@@ -10,8 +10,8 @@ interface Refund extends Document {
 
 const refundSchema = new Schema<Refund>(
   {
-    title: { type: String, required: true },
-    toRefund: { type: Number, required: true },
+    title: { type: String, required: true, maxlength: 50 },
+    toRefund: { type: Number, required: true, min: 0, max: 1000000 },
     done: { type: Boolean, required: false, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     roomateId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -22,4 +22,3 @@ const refundSchema = new Schema<Refund>(
 const RefundModel = model<Refund>("Refund", refundSchema);
 
 export default RefundModel;
-
