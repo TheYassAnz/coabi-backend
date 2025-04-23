@@ -11,17 +11,21 @@ interface File extends Document {
   description: string | null;
   type: FileTypes;
   size: number;
-  user_id: Types.ObjectId;
+  userId: Types.ObjectId;
 }
 
-const fileSchema = new Schema<File>({
-  _id: { type: String, required: true },
-  description: { type: String, required: false, default: null },
-  type: { type: String, enum: Object.values(FileTypes), required: true },
-  size: { type: Number, required: true },
-  user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
-});
+const fileSchema = new Schema<File>(
+  {
+    _id: { type: String, required: true },
+    description: { type: String, required: false, default: null },
+    type: { type: String, enum: Object.values(FileTypes), required: true },
+    size: { type: Number, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  },
+  { timestamps: true },
+);
 
 const FileModel = model<File>("File", fileSchema);
 
 export { FileModel };
+

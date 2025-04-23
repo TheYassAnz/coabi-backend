@@ -14,10 +14,10 @@ describe("Event API Integration Tests", () => {
     const eventData = {
       title: "Test Event",
       description: "This is a test event",
-      planned_date: "2023-12-01T10:00:00.000Z",
-      end_date: "2023-12-01T12:00:00.000Z",
-      user_id: "67ecf50fe1ec65f57a487989",
-      accommodation_id: "67e922f5f031d41cd1da4fe4",
+      plannedDate: "2023-12-01T10:00:00.000Z",
+      endDate: "2023-12-01T12:00:00.000Z",
+      userId: "67ecf50fe1ec65f57a487989",
+      accommodationId: "67e922f5f031d41cd1da4fe4",
     };
 
     const response = await request(app)
@@ -34,10 +34,10 @@ describe("Event API Integration Tests", () => {
     const invalidEventData = {
       title: "",
       description: "This is a test event",
-      planned_date: "invalid-date",
-      end_date: "2023-12-01T12:00:00.000Z",
-      user_id: "invalid-user-id",
-      accommodation_id: "67e922f5f031d41cd1da4fe4",
+      plannedDate: "invalid-date",
+      endDate: "2023-12-01T12:00:00.000Z",
+      userId: "invalid-user-id",
+      accommodationId: "67e922f5f031d41cd1da4fe4",
     };
 
     const response = await request(app)

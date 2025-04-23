@@ -1,6 +1,5 @@
 import request from "supertest";
 import app from "../../app";
-import e from "express";
 
 describe("Refund API Integration Tests", () => {
   let refundId = "";
@@ -14,9 +13,9 @@ describe("Refund API Integration Tests", () => {
   test("POST /refunds should create a new refund", async () => {
     const refundData = {
       title: "Test Refund",
-      to_split: 200,
-      user_id: "67ecf50fe1ec65f57a487989",
-      roommate_ids: ["67e922f5f031d41cd1da4fe4"],
+      toSplit: 200,
+      userId: "67ecf50fe1ec65f57a487989",
+      roomateIds: ["67e922f5f031d41cd1da4fe4"],
     };
 
     const response = await request(app)
@@ -32,9 +31,9 @@ describe("Refund API Integration Tests", () => {
   test("POST /refunds should return 400 for invalid data", async () => {
     const invalidRefundData = {
       title: "",
-      to_split: -100,
-      user_id: "",
-      roommate_ids: [],
+      toSplit: -100,
+      userId: "",
+      roomateIds: [],
     };
 
     const response = await request(app)
@@ -60,8 +59,8 @@ describe("Refund API Integration Tests", () => {
 
   test("GET /refunds/filter should return refunds by filter", async () => {
     const params = {
-      to_refund_start: 99,
-      to_refund_end: 101,
+      toRefundStart: 99,
+      toRefundEnd: 101,
     };
 
     const response = await request(app)
@@ -76,7 +75,7 @@ describe("Refund API Integration Tests", () => {
   test("PUT /refunds/:id should update a refund by ID", async () => {
     const updatedData = {
       title: "Test Refund",
-      to_refund: 0,
+      toRefund: 0,
     };
 
     const response = await request(app)
@@ -86,7 +85,7 @@ describe("Refund API Integration Tests", () => {
 
     expect(response.body).toHaveProperty("message", "Ok");
     expect(response.body.data).toHaveProperty("_id", refundId);
-    expect(response.body.data).toHaveProperty("to_refund", 0);
+    expect(response.body.data).toHaveProperty("toRefund", 0);
   });
 
   test("DELETE /refunds/:id should delete a refund by ID", async () => {

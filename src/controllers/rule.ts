@@ -15,12 +15,12 @@ const getAllRules = async (req: Request, res: Response): Promise<any> => {
 
 const createRule = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, description, accommodation_id } = req.body;
+    const { title, description, accommodationId } = req.body;
 
     const newRule = new Rule({
       title,
       description,
-      accommodation_id,
+      accommodationId,
     });
 
     await newRule.save();

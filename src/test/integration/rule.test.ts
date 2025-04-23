@@ -14,7 +14,7 @@ describe("Rule API Integration Tests", () => {
     const ruleData = {
       title: "Test Rule",
       description: "This is a test rule",
-      accommodation_id: "67e922f5f031d41cd1da4fe4",
+      accommodationId: "67e922f5f031d41cd1da4fe4",
     };
 
     const response = await request(app)

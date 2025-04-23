@@ -16,8 +16,8 @@ describe("Task API Integration Tests", () => {
       description: "This is a test task",
       weekly: true,
       done: false,
-      user_id: "67ecf50fe1ec65f57a487989",
-      accommodation_id: "67e922f5f031d41cd1da4fe4",
+      userId: "67ecf50fe1ec65f57a487989",
+      accommodationId: "67e922f5f031d41cd1da4fe4",
     };
 
     const response = await request(app)
@@ -36,8 +36,8 @@ describe("Task API Integration Tests", () => {
       description: "This is a test task",
       weekly: "true",
       done: "false",
-      user_id: "01010001001001010101010",
-      accommodation_id: "0101010010001010101010",
+      userId: "01010001001001010101010",
+      accommodationId: "0101010010001010101010",
     };
 
     const response = await request(app)
