@@ -35,8 +35,10 @@
     "typescript-eslint": "^8.29.0"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
     "@types/multer": "^1.4.12",
     "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
