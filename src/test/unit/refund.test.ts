@@ -1,5 +1,5 @@
-import { splitRefund } from "../../controllers/refund";
+import { split } from "../../utils/utils";
 
-test("split refund", () => {
-  expect(splitRefund(60, 2)).toBe(20);
+test("split", () => {
+  expect(split(60, 3)).toBe(20);
 });
