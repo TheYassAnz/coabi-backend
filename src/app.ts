@@ -3,8 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 import mongoSanitize from "express-mongo-sanitize";
-import { xssSanitizer } from "./middleware/xssSanitizer";
+import { xssSanitizer } from "./middleware/xss-sanitizer";
 import helmet from "helmet";
+import cors from "cors";
 
 const clientOptions = {
   serverApi: { version: "1" as const, strict: true, deprecationErrors: true },
@@ -25,6 +26,15 @@ app.use(express.json());
 app.use(mongoSanitize()); // Protect against NoSQL injection
 app.use(xssSanitizer); // Sanitize user inputs to prevent XSS
 app.use(helmet()); // Set security headers to protect the frontend from XSS
+
+const corsOptions: cors.CorsOptions = {
+  origin: [process.env.FRONTEND_URI || "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions)); // Enable CORS for frontend requests only
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
