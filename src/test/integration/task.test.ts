@@ -74,7 +74,7 @@ describe("Task API Integration Tests", () => {
     expect(response.body.data.length).toBeGreaterThan(0);
   });
 
-  test("PUT /tasks/:id should update a task by ID", async () => {
+  test("PATCH /tasks/:id should update a task by ID", async () => {
     const updatedData = {
       name: "Updated Test Task",
       description: "This is an updated test task",

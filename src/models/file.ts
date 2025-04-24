@@ -16,8 +16,13 @@ interface File extends Document {
 
 const fileSchema = new Schema<File>(
   {
-    _id: { type: String, required: true },
-    description: { type: String, required: false, default: null },
+    _id: { type: String, required: true, maxlength: 50 },
+    description: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 100,
+    },
     type: { type: String, enum: Object.values(FileTypes), required: true },
     size: { type: Number, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -28,4 +33,3 @@ const fileSchema = new Schema<File>(
 const FileModel = model<File>("File", fileSchema);
 
 export { FileModel };
-

@@ -1,6 +1,7 @@
 import Accommodation from "../models/accommodation";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { generateRandomCode } from "../utils/utils";
 
 const getAllAccommodations = async (
   req: Request,
@@ -21,13 +22,15 @@ const createAccommodation = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const { name, code, location, postalCode, country } = req.body;
+    const { name, location, postalCode, country } = req.body;
 
-    const existCode = await Accommodation.findOne({ code });
+    let code: string;
+    let existCode: boolean;
 
-    if (existCode) {
-      return res.status(400).json({ message: "Code already exists" });
-    }
+    do {
+      code = generateRandomCode();
+      existCode = !!(await Accommodation.findOne({ code }));
+    } while (existCode);
 
     const newAccommodation = new Accommodation({
       name,
@@ -75,20 +78,13 @@ const updateAccommodationById = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const { name, code, location, postalCode, country } = req.body;
+    const { name, location, postalCode, country } = req.body;
     const accommodationId = req.params.id;
-
-    const existCode = await Accommodation.findOne({ code });
-
-    if (existCode) {
-      return res.status(400).json({ message: "Code already exists" });
-    }
 
     const accommodation = await Accommodation.findByIdAndUpdate(
       accommodationId,
       {
         name,
-        code,
         location,
         postalCode,
         country,

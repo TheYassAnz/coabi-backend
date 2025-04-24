@@ -8,8 +8,8 @@ interface Rule extends Document {
 
 const ruleSchema = new Schema<Rule>(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    title: { type: String, required: true, maxlength: 50 },
+    description: { type: String, required: true, maxlength: 500 },
     accommodationId: {
       type: Schema.Types.ObjectId,
       ref: "Accommodation",

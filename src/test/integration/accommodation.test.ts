@@ -13,9 +13,9 @@ describe("Accommodation API Integration Tests", () => {
   test("POST /accommodations should create a new accommodation", async () => {
     const accommodationData = {
       name: "Test Accommodation",
-      code: "TST1234",
+      code: "123456789TTT",
       location: "Test Location",
-      postalCode: "12345",
+      postalCode: 12345,
       country: "Test Country",
     };
 
@@ -57,7 +57,7 @@ describe("Accommodation API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", accommodationId);
   });
 
-  test("PUT /accommodations/:id should update an accommodation by ID", async () => {
+  test("PATCH /accommodations/:id should update an accommodation by ID", async () => {
     const updatedData = {
       name: "Updated Test Accommodation",
       location: "Updated Location",

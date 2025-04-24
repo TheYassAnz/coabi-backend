@@ -2,6 +2,7 @@ import User from "../models/user";
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { validPasswordLength } from "../utils/utils";
 
 interface QueryParamsUsers {
   $or?: {
@@ -48,10 +49,16 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     }
 
     let updatedData = req.body;
+    const { password } = updatedData;
 
-    if (req.body.password) {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      updatedData = { ...req.body, password: hashedPassword };
+    if (password) {
+      if (!validPasswordLength(password)) {
+        return res.status(400).json({
+          message: "Password must be between 8 and 72 characters.",
+        });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedData = { ...updatedData, password: hashedPassword };
     }
 
     const user = await User.findByIdAndUpdate(id, updatedData, {

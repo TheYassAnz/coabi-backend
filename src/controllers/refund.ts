@@ -1,6 +1,7 @@
 import Refund from "../models/refund";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { split } from "../utils/utils";
 
 interface QueryParamsRefunds {
   title?: {
@@ -21,10 +22,6 @@ const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
-};
-
-export const splitRefund = (toSplit: number, roomates: number): number => {
-  return parseFloat((toSplit / (roomates + 1)).toFixed(2));
 };
 
 const createRefund = async (
@@ -59,7 +56,7 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const toRefund = splitRefund(toSplit, roomateIds.length);
+    const toRefund = split(toSplit, roomateIds.length + 1);
 
     const newRefunds = await Promise.all(
       roomateIds.map(async (roomateId: string) => {

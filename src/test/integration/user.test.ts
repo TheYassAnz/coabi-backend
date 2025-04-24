@@ -12,16 +12,9 @@ describe("User API Integration Tests", () => {
 
   test("POST /auth/register should create a new user", async () => {
     const userData = {
-      firstName: "John",
-      lastName: "Doe",
-      username: "JOJOJO",
+      username: "jojo",
       password: "password1234",
-      age: 30,
-      description: "Test user",
-      email: "jojojo@example.com",
-      phoneNumber: "1234567890",
-      profilePictureId: "67e922f5f031d41cd1da4fe4",
-      accommodationId: "67e922f5f031d41cd1da4fe4",
+      email: "jojo@example.com",
     };
 
     const response = await request(app)
@@ -30,7 +23,7 @@ describe("User API Integration Tests", () => {
       .expect(201);
 
     expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("firstName", "John");
+    expect(response.body.data).toHaveProperty("username", "jojo");
     userId = response.body.data._id;
   });
 
@@ -61,6 +54,24 @@ describe("User API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", userId);
   });
 
+  test("PATCH /users/:id should update a user by ID", async () => {
+    const updatedData = {
+      firstName: "Jojo",
+      lastName: "Joestar",
+      age: 28,
+      description: "Updated test user",
+    };
+
+    const response = await request(app)
+      .patch(`/api/users/${userId}`)
+      .send(updatedData)
+      .expect(200);
+
+    expect(response.body).toHaveProperty("message", "Ok");
+    expect(response.body.data).toHaveProperty("_id", userId);
+    expect(response.body.data).toHaveProperty("firstName", "Jojo");
+  });
+
   test("GET /users/filter should return tasks by filter", async () => {
     const params = {
       name: "Jo",
@@ -73,23 +84,6 @@ describe("User API Integration Tests", () => {
 
     expect(Array.isArray(response.body.data)).toBe(true);
     expect(response.body.data.length).toBeGreaterThan(0);
-  });
-
-  test("PUT /users/:id should update a user by ID", async () => {
-    const updatedData = {
-      firstName: "Jane",
-      age: 28,
-      description: "Updated test user",
-    };
-
-    const response = await request(app)
-      .patch(`/api/users/${userId}`)
-      .send(updatedData)
-      .expect(200);
-
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", userId);
-    expect(response.body.data).toHaveProperty("firstName", "Jane");
   });
 
   test("DELETE /users/:id should delete a user by ID", async () => {

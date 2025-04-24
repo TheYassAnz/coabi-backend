@@ -76,7 +76,7 @@ describe("Event API Integration Tests", () => {
     expect(response.body.data.length).toBeGreaterThan(0);
   });
 
-  test("PUT /events/:id should update an event by ID", async () => {
+  test("PATCH /events/:id should update an event by ID", async () => {
     const updatedData = {
       title: "Updated Test Event",
       description: "This is an updated test event",

@@ -15,14 +15,30 @@ interface User extends Document {
 
 const userSchema = new Schema<User>(
   {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    username: { type: String, required: true, unique: true },
+    firstName: { type: String, required: false, maxlength: 50 },
+    lastName: { type: String, required: false, maxlength: 50 },
+    username: { type: String, required: true, unique: true, maxlength: 50 },
     password: { type: String, required: true },
-    age: { type: Number, required: true },
-    description: { type: String, required: false, default: null },
-    email: { type: String, required: true, unique: true },
-    phoneNumber: { type: String, required: true },
+    age: { type: Number, required: false, min: 0, max: 120 },
+    description: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 500,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email address"],
+    },
+    phoneNumber: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+      maxlength: 15,
+    },
     profilePictureId: {
       type: Schema.Types.ObjectId,
       ref: "File",
