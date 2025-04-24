@@ -8,6 +8,7 @@ import Task from "../models/task";
 import Refund from "../models/refund";
 import Event from "../models/event";
 import Accommodation from "../models/accommodation";
+import { generateRandomCode } from "../utils/utils";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -46,10 +47,10 @@ async function test() {
     for (let i = 0; i <= 2; i++) {
       await new Accommodation({
         name: faker.company.name(),
-        code: faker.number.int({ min: 1000, max: 9999 }).toString(),
+        code: generateRandomCode(),
         location: faker.location.city(),
         postalCode: fakerFR.location.zipCode(),
-        country: faker.location.country(),
+        country: faker.location.country().slice(0, 30),
       }).save();
     }
 
@@ -63,9 +64,9 @@ async function test() {
         username: faker.internet.username(),
         password: await bcrypt.hash("password", 10),
         age: 30,
-        description: faker.person.bio(),
+        description: faker.person.bio().slice(0, 200),
         email: faker.internet.email(),
-        phoneNumber: faker.phone.number(),
+        phoneNumber: faker.number.int({ max: 9999999999 }),
         accommodationId: accomadations[Math.floor(Math.random() * 4)]._id,
       }).save();
     }
@@ -76,7 +77,7 @@ async function test() {
     for (let i = 0; i < users.length; i++) {
       await new Task({
         name: faker.hacker.verb() + " " + faker.hacker.noun(),
-        description: faker.lorem.paragraph(),
+        description: faker.lorem.paragraph().slice(0, 200),
         weekly: faker.datatype.boolean(),
         done: faker.datatype.boolean(),
         userId: users[i]._id,
