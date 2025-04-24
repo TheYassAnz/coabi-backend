@@ -51,7 +51,7 @@ describe("Rule API Integration Tests", () => {
     expect(response.body).toHaveProperty("data._id", ruleId);
   });
 
-  test("PUT /rules/:id should update a rule by ID", async () => {
+  test("PATCH /rules/:id should update a rule by ID", async () => {
     const updatedData = {
       title: "Updated Test Rule",
       description: "This is an updated test rule",

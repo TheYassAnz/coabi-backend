@@ -57,7 +57,7 @@ describe("Accommodation API Integration Tests", () => {
     expect(response.body.data).toHaveProperty("_id", accommodationId);
   });
 
-  test("PUT /accommodations/:id should update an accommodation by ID", async () => {
+  test("PATCH /accommodations/:id should update an accommodation by ID", async () => {
     const updatedData = {
       name: "Updated Test Accommodation",
       location: "Updated Location",

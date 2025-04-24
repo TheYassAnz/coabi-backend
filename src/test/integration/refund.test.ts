@@ -72,7 +72,7 @@ describe("Refund API Integration Tests", () => {
     expect(response.body.data.length).toBeGreaterThan(0);
   });
 
-  test("PUT /refunds/:id should update a refund by ID", async () => {
+  test("PATCH /refunds/:id should update a refund by ID", async () => {
     const updatedData = {
       title: "Test Refund",
       toRefund: 0,

@@ -15,11 +15,11 @@ interface User extends Document {
 
 const userSchema = new Schema<User>(
   {
-    firstName: { type: String, required: true, maxlength: 50 },
-    lastName: { type: String, required: true, maxlength: 50 },
+    firstName: { type: String, required: false, maxlength: 50 },
+    lastName: { type: String, required: false, maxlength: 50 },
     username: { type: String, required: true, unique: true, maxlength: 50 },
     password: { type: String, required: true },
-    age: { type: Number, required: true, min: 0, max: 120 },
+    age: { type: Number, required: false, min: 0, max: 120 },
     description: {
       type: String,
       required: false,
@@ -32,7 +32,13 @@ const userSchema = new Schema<User>(
       unique: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email address"],
     },
-    phoneNumber: { type: String, required: true, unique: true, maxlength: 15 },
+    phoneNumber: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+      maxlength: 15,
+    },
     profilePictureId: {
       type: Schema.Types.ObjectId,
       ref: "File",

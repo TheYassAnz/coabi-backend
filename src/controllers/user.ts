@@ -49,7 +49,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     }
 
     let updatedData = req.body;
-    const { password } = req.body;
+    const { password } = updatedData;
 
     if (password) {
       if (!validPasswordLength(password)) {
@@ -58,7 +58,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
         });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      updatedData = { ...req.body, password: hashedPassword };
+      updatedData = { ...updatedData, password: hashedPassword };
     }
 
     const user = await User.findByIdAndUpdate(id, updatedData, {

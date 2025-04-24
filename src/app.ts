@@ -29,7 +29,7 @@ app.use(helmet()); // Set security headers to protect the frontend from XSS
 
 const corsOptions: cors.CorsOptions = {
   origin: [process.env.FRONTEND_URI || "http://localhost:3000"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };

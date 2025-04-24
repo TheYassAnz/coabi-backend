@@ -6,30 +6,7 @@ import { validPasswordLength } from "../utils/utils";
 
 const register = async (req: Request, res: Response): Promise<any> => {
   try {
-    const {
-      firstName,
-      lastName,
-      username,
-      password,
-      age,
-      description,
-      email,
-      phoneNumber,
-      profilePictureId,
-      accommodationId,
-    } = req.body;
-
-    const existUsername = await User.findOne({ username });
-
-    if (existUsername) {
-      return res.status(400).json({ message: "Username already exists." });
-    }
-
-    const existEmail = await User.findOne({ email });
-
-    if (existEmail) {
-      return res.status(400).json({ message: "Email already exists." });
-    }
+    const { username, password, email } = req.body;
 
     if (!validPasswordLength(password)) {
       return res.status(400).json({
@@ -40,16 +17,9 @@ const register = async (req: Request, res: Response): Promise<any> => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      firstName,
-      lastName,
       username,
       password: hashedPassword,
-      age,
-      description,
       email,
-      phoneNumber,
-      profilePictureId,
-      accommodationId,
     });
 
     await newUser.save();
