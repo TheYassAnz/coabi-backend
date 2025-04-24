@@ -5,7 +5,8 @@
   "scripts": {
     "start": "tsx watch server.ts",
     "test": "jest",
-    "prepare": "husky"
+    "prepare": "husky",
+    "populate": "tsx src/scripts/populate_db.ts"
   },
   "keywords": [],
   "author": "",

@@ -32,12 +32,10 @@ async function test() {
 
   const answer = await rl.question(
     "==============================\nWhat do you want to do?\n==============================\n1. Populate database.\n2. Delete data from DB.\n3. Quit.\n==============================\n",
-    (answer) => {
-      console.log(`You want to: ${answer}`);
-      rl.close();
-      return answer;
-    },
   );
+
+  console.log(`You want to: ${answer}`);
+  rl.close();
 
   if (answer === "1") {
     console.log("Populating database...");
@@ -67,7 +65,8 @@ async function test() {
         description: faker.person.bio().slice(0, 200),
         email: faker.internet.email(),
         phoneNumber: faker.number.int({ max: 9999999999 }),
-        accommodationId: accomadations[Math.floor(Math.random() * 4)]._id,
+        accommodationId:
+          accomadations[Math.floor(Math.random() * accomadations.length)]._id,
       }).save();
     }
 
@@ -118,9 +117,12 @@ async function test() {
     await Event.deleteMany({});
     await Accommodation.deleteMany({});
     console.log("Data deleted from DB.");
-    process.exit(0);
+    test();
   } else if (answer === "3") {
     console.log("Quitting...");
     process.exit(0);
+  } else {
+    console.log("Invalid answer.");
+    test();
   }
 }
