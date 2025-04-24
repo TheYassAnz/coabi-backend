@@ -1,6 +1,7 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Types, Document } from "mongoose";
 
 interface Accommodation extends Document {
+  _id: Types.ObjectId;
   name: string;
   code: string;
   location: string;

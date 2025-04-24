@@ -1,6 +1,7 @@
 import { Schema, model, Types, Document } from "mongoose";
 
 interface Task extends Document {
+  _id: Types.ObjectId;
   name: string;
   description: string | null;
   weekly: boolean;
