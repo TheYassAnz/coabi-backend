@@ -1,20 +1,44 @@
-import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
+import { verifyAccessToken } from "../utils/auth/jwt";
+import { verifyCsrfToken } from "../utils/auth/csrf";
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): any => {
+  // exclude refresh and login request and check for CSRF token
+  const excludedRoutes = ["/refresh", "/logout"];
+  if (
+    req.path.includes(excludedRoutes[0]) ||
+    req.path.includes(excludedRoutes[1])
+  ) {
+    const csrfToken = req.headers["x-csrf-token"];
+    const csrfSecret = req.cookies.csrfSecret;
+
+    if (
+      !csrfToken ||
+      !csrfSecret ||
+      !verifyCsrfToken(csrfSecret, csrfToken.toString())
+    ) {
+      return res.status(403).json({ message: "Invalid CSRF token" });
+    }
+
+    next();
+  }
+
   const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "No token given." });
+    return res.status(401).json({ message: "Token not found" });
   }
 
   try {
-    const secretKey = process.env.SECRET_KEY || "zDZEKIOazirnaz";
-    const decoded = jwt.verify(token, secretKey);
-    req.body.user = decoded;
+    const decoded = verifyAccessToken(token);
+    req.user = decoded;
     next();
   } catch (error: any) {
-    return res.status(403).json({ message: "Invalid token." });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

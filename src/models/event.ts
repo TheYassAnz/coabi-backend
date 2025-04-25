@@ -1,6 +1,7 @@
 import { Schema, model, Types, Document } from "mongoose";
 
 interface Event extends Document {
+  _id: Types.ObjectId;
   title: string;
   description: string;
   plannedDate: Date;

@@ -1,6 +1,7 @@
 import { Schema, model, Types, Document } from "mongoose";
 
 interface Refund extends Document {
+  _id: Types.ObjectId;
   title: string;
   toRefund: number;
   done: boolean;

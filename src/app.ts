@@ -6,6 +6,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import { xssSanitizer } from "./middleware/xss-sanitizer";
 import helmet from "helmet";
 import cors from "cors";
+import authMiddleware from "./middleware/auth";
 
 const clientOptions = {
   serverApi: { version: "1" as const, strict: true, deprecationErrors: true },
@@ -35,6 +36,7 @@ const corsOptions: cors.CorsOptions = {
 };
 
 app.use(cors(corsOptions)); // Enable CORS for frontend requests only
+// app.use(authMiddleware); Enable middleware later
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });

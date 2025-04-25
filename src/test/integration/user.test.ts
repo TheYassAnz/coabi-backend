@@ -29,8 +29,6 @@ describe("User API Integration Tests", () => {
 
   test("POST /register should return 400 if required fields are missing", async () => {
     const invalidUserData = {
-      age: 30,
-      description: "Test user",
       email: "jojo@example.com",
       phoneNumber: "1234567890",
     };
