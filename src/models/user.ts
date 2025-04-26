@@ -19,7 +19,7 @@ const userSchema = new Schema<User>(
     firstName: { type: String, required: false, maxlength: 50 },
     lastName: { type: String, required: false, maxlength: 50 },
     username: { type: String, required: true, unique: true, maxlength: 50 },
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false },
     age: { type: Number, required: false, min: 0, max: 120 },
     description: {
       type: String,
