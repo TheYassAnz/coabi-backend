@@ -25,9 +25,9 @@ describe("Task API Integration Tests", () => {
       .send(taskData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("name", "Test Task");
-    taskId = response.body.data._id;
+    response.body;
+    expect(response.body).toHaveProperty("name", "Test Task");
+    taskId = response.body._id;
   });
 
   test("POST /tasks should return 400 if required fields are missing", async () => {
@@ -50,13 +50,13 @@ describe("Task API Integration Tests", () => {
 
   test("GET /tasks should return all tasks", async () => {
     const response = await request(app).get("/api/tasks").expect(200);
-    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
   test("GET /tasks/:id should return a task by ID", async () => {
     const response = await request(app).get(`/api/tasks/${taskId}`).expect(200);
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", taskId);
+    response.body;
+    expect(response.body).toHaveProperty("_id", taskId);
   });
 
   test("GET /tasks/filter should return tasks by filter", async () => {
@@ -70,8 +70,8 @@ describe("Task API Integration Tests", () => {
       .query(params)
       .expect(200);
 
-    expect(Array.isArray(response.body.data)).toBe(true);
-    expect(response.body.data.length).toBeGreaterThan(0);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
   });
 
   test("PATCH /tasks/:id should update a task by ID", async () => {
@@ -86,9 +86,9 @@ describe("Task API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", taskId);
-    expect(response.body.data).toHaveProperty("done", true);
+    response.body;
+    expect(response.body).toHaveProperty("_id", taskId);
+    expect(response.body).toHaveProperty("done", true);
   });
 
   test("DELETE /tasks/:id should delete a task by ID", async () => {

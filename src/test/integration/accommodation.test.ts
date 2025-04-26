@@ -24,9 +24,9 @@ describe("Accommodation API Integration Tests", () => {
       .send(accommodationData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("name", "Test Accommodation");
-    accommodationId = response.body.data._id;
+    response.body;
+    expect(response.body).toHaveProperty("name", "Test Accommodation");
+    accommodationId = response.body._id;
   });
 
   test("POST /accommodations should return 400 for invalid data", async () => {
@@ -45,7 +45,7 @@ describe("Accommodation API Integration Tests", () => {
 
   test("GET /accommodations should return all accommodations", async () => {
     const response = await request(app).get("/api/accommodations").expect(200);
-    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
   test("GET /accommodations/:id should return an accommodation by ID", async () => {
@@ -53,8 +53,8 @@ describe("Accommodation API Integration Tests", () => {
       .get(`/api/accommodations/${accommodationId}`)
       .expect(200);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", accommodationId);
+    response.body;
+    expect(response.body).toHaveProperty("_id", accommodationId);
   });
 
   test("PATCH /accommodations/:id should update an accommodation by ID", async () => {
@@ -68,12 +68,9 @@ describe("Accommodation API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", accommodationId);
-    expect(response.body.data).toHaveProperty(
-      "name",
-      "Updated Test Accommodation",
-    );
+    response.body;
+    expect(response.body).toHaveProperty("_id", accommodationId);
+    expect(response.body).toHaveProperty("name", "Updated Test Accommodation");
   });
 
   test("DELETE /accommodations/:id should delete an accommodation by ID", async () => {

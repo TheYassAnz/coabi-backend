@@ -18,7 +18,7 @@ interface QueryParamsEvents {
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const events = await Event.find();
-    return res.status(200).json({ message: "Ok", data: events });
+    return res.status(200).json(events);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
@@ -47,7 +47,7 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newEvent.save();
-    return res.status(201).json({ message: "Ok", data: newEvent });
+    return res.status(201).json(newEvent);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -72,7 +72,7 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: event });
+    return res.status(200).json(event);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
@@ -98,7 +98,7 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: event });
+    return res.status(200).json(event);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -157,7 +157,7 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
 
     const events = await Event.find(params);
 
-    return res.status(200).json({ message: "Ok", data: events });
+    return res.status(200).json(events);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",

@@ -24,9 +24,9 @@ describe("XSS sanitization Test", () => {
       .send(taskData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("description", "");
-    taskId = response.body.data._id;
+    response.body;
+    expect(response.body).toHaveProperty("description", "");
+    taskId = response.body._id;
   });
 });
 

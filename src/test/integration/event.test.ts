@@ -25,9 +25,9 @@ describe("Event API Integration Tests", () => {
       .send(eventData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("title", "Test Event");
-    eventId = response.body.data._id;
+    response.body;
+    expect(response.body).toHaveProperty("title", "Test Event");
+    eventId = response.body._id;
   });
 
   test("POST /events should return 400 for invalid data", async () => {
@@ -50,15 +50,15 @@ describe("Event API Integration Tests", () => {
 
   test("GET /events should return all events", async () => {
     const response = await request(app).get("/api/events").expect(200);
-    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
   test("GET /events/:id should return an event by ID", async () => {
     const response = await request(app)
       .get(`/api/events/${eventId}`)
       .expect(200);
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", eventId);
+    response.body;
+    expect(response.body).toHaveProperty("_id", eventId);
   });
 
   test("GET /events/filter should return events by filter", async () => {
@@ -72,8 +72,8 @@ describe("Event API Integration Tests", () => {
       .query(params)
       .expect(200);
 
-    expect(Array.isArray(response.body.data)).toBe(true);
-    expect(response.body.data.length).toBeGreaterThan(0);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
   });
 
   test("PATCH /events/:id should update an event by ID", async () => {
@@ -87,9 +87,9 @@ describe("Event API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", eventId);
-    expect(response.body.data).toHaveProperty("title", "Updated Test Event");
+    response.body;
+    expect(response.body).toHaveProperty("_id", eventId);
+    expect(response.body).toHaveProperty("title", "Updated Test Event");
   });
 
   test("DELETE /events/:id should delete an event by ID", async () => {

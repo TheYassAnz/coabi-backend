@@ -29,7 +29,7 @@ const register = async (req: Request, res: Response): Promise<any> => {
 
     await newUser.save();
 
-    res.status(201).json({ message: "Ok", data: newUser });
+    res.status(201).json(newUser);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -66,7 +66,7 @@ const login = async (req: Request, res: Response): Promise<any> => {
     });
     setRefreshTokenCookie(res, refreshToken);
 
-    res.status(200).json({ message: "OK", data: accessToken });
+    res.status(200).json({ token: accessToken });
   } catch (error: any) {
     res.status(500).json({ message: "Internal server error" });
   }
@@ -85,7 +85,7 @@ const csrf = async (req: Request, res: Response): Promise<any> => {
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
-    return res.status(200).json({ data: token });
+    return res.status(200).json({ token: token });
   } catch (error) {
     return res.status(403).json({ error: "Invalid csrf token" });
   }
@@ -113,7 +113,7 @@ const refresh = async (req: Request, res: Response): Promise<any> => {
     });
 
     setRefreshTokenCookie(res, tokens.refreshToken);
-    return res.status(200).json({ data: tokens.accessToken });
+    return res.status(200).json({ token: tokens.accessToken });
   } catch (error: any) {
     return res.status(500).json({ error: "Internal server error" });
   }
