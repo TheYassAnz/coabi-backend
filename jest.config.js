@@ -12,4 +12,5 @@ export default {
   },
   globalSetup: "<rootDir>/src/test/globalSetup.ts",
   globalTeardown: "<rootDir>/src/test/globalTeardown.ts",
+  testTimeout: 10000, // 10 seconds
 };

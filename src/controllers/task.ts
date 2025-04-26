@@ -15,7 +15,7 @@ interface QueryParamsTasks {
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const tasks = await Task.find();
-    return res.status(200).json({ message: "Ok", data: tasks });
+    return res.status(200).json(tasks);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
@@ -37,7 +37,7 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newTask.save();
-    return res.status(201).json({ message: "Ok", data: newTask });
+    return res.status(201).json(newTask);
   } catch (error: any) {
     if (error instanceof mongoose.Error.ValidationError) {
       return res.status(400).json({ message: "Bad request" });
@@ -62,7 +62,7 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: task });
+    return res.status(200).json(task);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
@@ -88,7 +88,7 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: task });
+    return res.status(200).json(task);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -145,7 +145,7 @@ const filterTasks = async (req: Request, res: Response): Promise<any> => {
 
     const events = await Task.find(params);
 
-    return res.status(200).json({ message: "Ok", data: events });
+    return res.status(200).json(events);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",

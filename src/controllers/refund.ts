@@ -18,7 +18,7 @@ interface QueryParamsRefunds {
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const refunds = await Refund.find();
-    return res.json({ message: "Ok", data: refunds });
+    return res.json(refunds);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -64,7 +64,7 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
       }),
     );
 
-    return res.status(201).json({ message: "Ok", data: newRefunds });
+    return res.status(201).json(newRefunds);
   } catch (error: any) {
     if (error.message === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -87,7 +87,7 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: refund });
+    return res.status(200).json(refund);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -117,7 +117,7 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: refund });
+    return res.status(200).json(refund);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -175,7 +175,7 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
 
     const refunds = await Refund.find(params);
 
-    return res.status(200).json({ message: "Ok", data: refunds });
+    return res.status(200).json(refunds);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",

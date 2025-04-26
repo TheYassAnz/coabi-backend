@@ -9,7 +9,7 @@ const getAllAccommodations = async (
 ): Promise<any> => {
   try {
     const accommodations = await Accommodation.find();
-    return res.status(200).json({ message: "Ok", data: accommodations });
+    return res.status(200).json(accommodations);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
@@ -42,7 +42,7 @@ const createAccommodation = async (
 
     await newAccommodation.save();
 
-    return res.status(201).json({ message: "Ok", data: newAccommodation });
+    return res.status(201).json(newAccommodation);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -67,7 +67,7 @@ const getAccommodationById = async (
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: accommodation });
+    return res.status(200).json(accommodation);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -94,7 +94,7 @@ const updateAccommodationById = async (
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
-    return res.status(200).json({ message: "Ok", data: accommodation });
+    return res.status(200).json(accommodation);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });

@@ -74,7 +74,7 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
     });
 
     await newFile.save();
-    res.status(201).json({ message: "Ok", data: newFile });
+    res.status(201).json(newFile);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });

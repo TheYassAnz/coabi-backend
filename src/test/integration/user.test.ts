@@ -22,9 +22,9 @@ describe("User API Integration Tests", () => {
       .send(userData)
       .expect(201);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("username", "jojo");
-    userId = response.body.data._id;
+    response.body;
+    expect(response.body).toHaveProperty("username", "jojo");
+    userId = response.body._id;
   });
 
   test("POST /register should return 400 if required fields are missing", async () => {
@@ -43,13 +43,13 @@ describe("User API Integration Tests", () => {
 
   test("GET /users should return all users", async () => {
     const response = await request(app).get("/api/users").expect(200);
-    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
   test("GET /users/:id should return a user by ID", async () => {
     const response = await request(app).get(`/api/users/${userId}`).expect(200);
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", userId);
+    response.body;
+    expect(response.body).toHaveProperty("_id", userId);
   });
 
   test("PATCH /users/:id should update a user by ID", async () => {
@@ -65,9 +65,9 @@ describe("User API Integration Tests", () => {
       .send(updatedData)
       .expect(200);
 
-    expect(response.body).toHaveProperty("message", "Ok");
-    expect(response.body.data).toHaveProperty("_id", userId);
-    expect(response.body.data).toHaveProperty("firstName", "Jojo");
+    response.body;
+    expect(response.body).toHaveProperty("_id", userId);
+    expect(response.body).toHaveProperty("firstName", "Jojo");
   });
 
   test("GET /users/filter should return tasks by filter", async () => {
@@ -80,8 +80,8 @@ describe("User API Integration Tests", () => {
       .query(params)
       .expect(200);
 
-    expect(Array.isArray(response.body.data)).toBe(true);
-    expect(response.body.data.length).toBeGreaterThan(0);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
   });
 
   test("DELETE /users/:id should delete a user by ID", async () => {

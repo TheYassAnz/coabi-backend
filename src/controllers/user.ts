@@ -15,7 +15,7 @@ interface QueryParamsUsers {
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const users = await User.find();
-    return res.json({ message: "Ok", data: users });
+    return res.json(users);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -34,7 +34,7 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: user });
+    return res.status(200).json(user);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -70,7 +70,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json({ message: "Ok", data: user });
+    return res.status(200).json(user);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -112,7 +112,7 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
 
     const users = await User.find(params);
 
-    return res.status(200).json({ message: "Ok", data: users });
+    return res.status(200).json(users);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
