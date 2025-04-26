@@ -7,6 +7,7 @@ import { xssSanitizer } from "./middleware/xss-sanitizer";
 import helmet from "helmet";
 import cors from "cors";
 import authMiddleware from "./middleware/auth";
+import morgan from "morgan";
 
 const clientOptions = {
   serverApi: { version: "1" as const, strict: true, deprecationErrors: true },
@@ -35,8 +36,10 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
 };
 
+app.use(morgan("dev"));
+
 app.use(cors(corsOptions)); // Enable CORS for frontend requests only
-// app.use(authMiddleware); Enable middleware later
+app.use(authMiddleware);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });
