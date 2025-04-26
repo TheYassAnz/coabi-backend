@@ -6,7 +6,7 @@ interface Refund extends Document {
   toRefund: number;
   done: boolean;
   userId: Types.ObjectId;
-  roomateId: Types.ObjectId;
+  roommateId: Types.ObjectId;
 }
 
 const refundSchema = new Schema<Refund>(
@@ -15,7 +15,7 @@ const refundSchema = new Schema<Refund>(
     toRefund: { type: Number, required: true, min: 0, max: 1000000 },
     done: { type: Boolean, required: false, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    roomateId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    roommateId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true },
 );

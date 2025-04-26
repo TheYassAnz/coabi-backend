@@ -12,7 +12,7 @@ interface QueryParamsRefunds {
     $gte?: number;
     $lte?: number;
   };
-  roomateId?: string;
+  roommateId?: string;
 }
 
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
@@ -28,10 +28,10 @@ const createRefund = async (
   title: string,
   toRefund: number,
   userId: string,
-  roomateId: string,
+  roommateId: string,
 ): Promise<any> => {
   try {
-    const newRefund = new Refund({ title, toRefund, userId, roomateId });
+    const newRefund = new Refund({ title, toRefund, userId, roommateId });
 
     await newRefund.save();
 
@@ -46,21 +46,21 @@ const createRefund = async (
 
 const createRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, toSplit, userId, roomateIds } = req.body; // roomateIds is a string[]
+    const { title, toSplit, userId, roommateIds } = req.body; // roommateIds is a string[]
 
     if (toSplit < 0) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (roomateIds.length === 0) {
+    if (roommateIds.length === 0) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const toRefund = split(toSplit, roomateIds.length + 1);
+    const toRefund = split(toSplit, roommateIds.length + 1);
 
     const newRefunds = await Promise.all(
-      roomateIds.map(async (roomateId: string) => {
-        return await createRefund(title, toRefund, userId, roomateId);
+      roommateIds.map(async (roommateId: string) => {
+        return await createRefund(title, toRefund, userId, roommateId);
       }),
     );
 
@@ -151,7 +151,7 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
 
 const filterRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, toRefundStart, toRefundEnd, roomateId } = req.query;
+    const { title, toRefundStart, toRefundEnd, roommateId } = req.query;
 
     const params: QueryParamsRefunds = {};
 
@@ -169,8 +169,8 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
       }
     }
 
-    if (roomateId) {
-      params.roomateId = roomateId as string;
+    if (roommateId) {
+      params.roommateId = roommateId as string;
     }
 
     const refunds = await Refund.find(params);

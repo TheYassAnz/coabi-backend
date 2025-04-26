@@ -92,7 +92,7 @@ async function test() {
         toRefund: faker.number.int({ min: 0, max: 100 }),
         done: faker.datatype.boolean(),
         userId: users[Math.floor(Math.random() * users.length)]._id,
-        roomateId: users[Math.floor(Math.random() * users.length)]._id,
+        roommateId: users[Math.floor(Math.random() * users.length)]._id,
       }).save();
     }
 
