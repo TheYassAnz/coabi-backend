@@ -30,7 +30,7 @@ app.use(xssSanitizer); // Sanitize user inputs to prevent XSS
 app.use(helmet()); // Set security headers to protect the frontend from XSS
 
 const corsOptions: cors.CorsOptions = {
-  origin: [process.env.FRONTEND_URI || "http://localhost:3000"],
+  origin: [process.env.FRONTEND_URI || "http://localhost:8081"],
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
