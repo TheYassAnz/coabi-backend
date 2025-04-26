@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: coabi-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - API_PORT=${API_PORT}
+      - MONGODB_URI=${MONGODB_URI}
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+      - NODE_ENV=${NODE_ENV}
+    restart: unless-stopped
