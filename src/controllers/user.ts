@@ -14,7 +14,7 @@ interface QueryParamsUsers {
 
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password");
     return res.json(users);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
@@ -28,7 +28,7 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const user = await User.findById(id);
+    const user = await User.findById(id).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "Not found" });
@@ -61,6 +61,20 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       updatedData = { ...updatedData, password: hashedPassword };
     }
 
+    if (updatedData.username) {
+      const existingUsername = await User.findOne(updatedData.username);
+      if (existingUsername) {
+        return res.status(409).json({ message: "Username already taken" });
+      }
+    }
+
+    if (updatedData.email) {
+      const existingEmail = await User.findOne(updatedData.email);
+      if (existingEmail) {
+        return res.status(409).json({ message: "Username already taken" });
+      }
+    }
+
     const user = await User.findByIdAndUpdate(id, updatedData, {
       new: true,
       runValidators: true,
@@ -70,7 +84,9 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    return res.status(200).json(user);
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
+
+    return res.status(200).json(userWithoutPassword);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -110,7 +126,7 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
       ];
     }
 
-    const users = await User.find(params);
+    const users = await User.find(params).select("-password");
 
     return res.status(200).json(users);
   } catch (error: any) {

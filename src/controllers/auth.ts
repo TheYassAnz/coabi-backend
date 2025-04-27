@@ -19,6 +19,17 @@ const register = async (req: Request, res: Response): Promise<any> => {
       });
     }
 
+    const existingUsername = await User.findOne({ username });
+
+    if (existingUsername) {
+      return res.status(409).json({ message: "Username already taken" });
+    }
+
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(409).json({ message: "Email already taken" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -29,7 +40,10 @@ const register = async (req: Request, res: Response): Promise<any> => {
 
     await newUser.save();
 
-    res.status(201).json(newUser);
+    const { password: userPassword, ...userWithoutPassword } =
+      newUser.toObject();
+
+    res.status(201).json(userWithoutPassword);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -50,14 +64,14 @@ const login = async (req: Request, res: Response): Promise<any> => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      res.status(404).json({ message: "Not found" });
+      res.status(404).json({ message: "User does not exist" });
       return;
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      res.status(401).json({ message: "Client error." });
+      res.status(401).json({ message: "Incorrect credentials" });
       return;
     }
 

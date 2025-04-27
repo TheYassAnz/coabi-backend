@@ -10,6 +10,7 @@ import Event from "../models/event";
 import Accommodation from "../models/accommodation";
 import { generateRandomCode } from "../utils/utils";
 import dotenv from "dotenv";
+import Rule from "../models/rule";
 
 dotenv.config();
 
@@ -107,6 +108,17 @@ async function test() {
         accommodationId: users[Math.floor(Math.random() * users.length)]._id,
       }).save();
     }
+
+    // Create rules
+    for (let i = 0; i < 3; i++) {
+      await new Rule({
+        title: faker.commerce.productName(),
+        description: faker.lorem.paragraph(),
+        accommodationId:
+          accomadations[Math.floor(Math.random() * accomadations.length)]._id,
+      }).save();
+    }
+
     console.log("Database populated.");
     test();
   } else if (answer === "2") {
@@ -115,6 +127,7 @@ async function test() {
     await Task.deleteMany({});
     await Refund.deleteMany({});
     await Event.deleteMany({});
+    await Rule.deleteMany({});
     await Accommodation.deleteMany({});
     console.log("Data deleted from DB.");
     test();
