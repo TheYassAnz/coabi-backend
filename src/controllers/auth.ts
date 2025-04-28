@@ -7,7 +7,6 @@ import {
   setRefreshTokenCookie,
   verifyRefreshToken,
 } from "../utils/auth/jwt";
-import { csrfTokens, generateCsrfToken } from "../utils/auth/csrf";
 
 const register = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -86,37 +85,23 @@ const login = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-const csrf = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const secret = await csrfTokens.secret();
-    const token = await generateCsrfToken(secret);
-
-    res.cookie("csrfSecret", secret, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-    });
-
-    return res.status(200).json({ csrfToken: token });
-  } catch (error) {
-    return res.status(403).json({ message: "Invalid csrf token" });
-  }
-};
-
 const refresh = async (req: Request, res: Response): Promise<any> => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "No refresh token provided" });
+      return res
+        .status(401)
+        .json({ message: "No refresh token provided", refreshToken });
     }
 
     let decoded;
     try {
       decoded = verifyRefreshToken(refreshToken);
     } catch (err) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+      return res
+        .status(401)
+        .json({ message: "Invalid refresh token", decoded });
     }
 
     const userId = typeof decoded === "string" ? decoded : decoded.id;
@@ -146,7 +131,6 @@ const logout = async (req: Request, res: Response): Promise<any> => {
 export default {
   register,
   login,
-  csrf,
   refresh,
   logout,
 };

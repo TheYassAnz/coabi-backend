@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.post("/register", authCtrl.register);
 router.post("/login", authCtrl.login);
-router.get("/csrf", authCtrl.csrf);
 router.post("/refresh", authCtrl.refresh);
 router.post("/logout", authCtrl.logout);
 

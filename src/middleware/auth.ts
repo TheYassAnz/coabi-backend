@@ -1,36 +1,21 @@
 import { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "../utils/auth/jwt";
-import { verifyCsrfToken } from "../utils/auth/csrf";
 
 const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
 ): any => {
-  // exclude refresh and login request and check for CSRF token
-  const excludedRoutes = [
-    "/api/register",
-    "/api/login",
-    "/api/refresh",
-    "/api/logout",
-  ];
   if (process.env.NODE_ENV === "test") {
+    // Need to create a test DB only for testing
     return next();
   }
 
+  // exclude routes from authentication
+  const excludedRoutes = ["/register", "/login", "/refresh", "/logout"];
+
   for (const route of excludedRoutes) {
-    if (req.path === route) {
-      if (route === "/api/refresh" || route === "/api/logout") {
-        const csrfToken = req.headers["x-csrf-token"];
-        const csrfSecret = req.cookies.csrfSecret;
-        if (
-          !csrfToken ||
-          !csrfSecret ||
-          !verifyCsrfToken(csrfSecret, csrfToken.toString())
-        ) {
-          return res.status(403).json({ message: "Invalid CSRF token" });
-        }
-      }
+    if (req.path.includes(route)) {
       return next();
     }
   }
