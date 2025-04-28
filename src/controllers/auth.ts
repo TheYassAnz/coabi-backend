@@ -80,7 +80,7 @@ const login = async (req: Request, res: Response): Promise<any> => {
     });
     setRefreshTokenCookie(res, refreshToken);
 
-    res.status(200).json({ token: accessToken });
+    res.status(200).json({ accessToken: accessToken });
   } catch (error: any) {
     res.status(500).json({ message: "Internal server error" });
   }
@@ -99,7 +99,7 @@ const csrf = async (req: Request, res: Response): Promise<any> => {
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
-    return res.status(200).json({ token: token });
+    return res.status(200).json({ csrfToken: token });
   } catch (error) {
     return res.status(403).json({ error: "Invalid csrf token" });
   }
@@ -127,7 +127,7 @@ const refresh = async (req: Request, res: Response): Promise<any> => {
     });
 
     setRefreshTokenCookie(res, tokens.refreshToken);
-    return res.status(200).json({ token: tokens.accessToken });
+    return res.status(200).json({ accessToken: tokens.accessToken });
   } catch (error: any) {
     return res.status(500).json({ error: "Internal server error" });
   }

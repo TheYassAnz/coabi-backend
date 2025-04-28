@@ -19,7 +19,7 @@ const userSchema = new Schema<User>(
     firstName: { type: String, required: false, default: null, maxlength: 50 },
     lastName: { type: String, required: false, default: null, maxlength: 50 },
     username: { type: String, required: true, unique: true, maxlength: 50 },
-    password: { type: String, required: true },
+    password: { type: String, required: true }, // password length is handled in the controller
     age: { type: Number, required: false, default: null, min: 0, max: 120 },
     description: {
       type: String,
@@ -32,6 +32,7 @@ const userSchema = new Schema<User>(
       required: true,
       unique: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email address"],
+      maxlength: 50,
     },
     phoneNumber: {
       type: String,
