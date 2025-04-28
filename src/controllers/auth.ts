@@ -96,12 +96,11 @@ const csrf = async (req: Request, res: Response): Promise<any> => {
       secure: true,
       sameSite: "strict",
       path: "/",
-      maxAge: 60 * 60 * 1000, // 1 hour
     });
 
     return res.status(200).json({ csrfToken: token });
   } catch (error) {
-    return res.status(403).json({ error: "Invalid csrf token" });
+    return res.status(403).json({ message: "Invalid csrf token" });
   }
 };
 
@@ -110,26 +109,28 @@ const refresh = async (req: Request, res: Response): Promise<any> => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ error: "No refresh token provided" });
+      return res.status(401).json({ message: "No refresh token provided" });
     }
 
-    const decoded = verifyRefreshToken(refreshToken);
-
-    if (!decoded) {
-      return res
-        .status(401)
-        .json({ message: "Invalid or expired refresh token" });
+    let decoded;
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch (err) {
+      return res.status(403).json({ message: "Invalid refresh token" });
     }
 
     const userId = typeof decoded === "string" ? decoded : decoded.id;
-    const tokens = generateTokens({
-      id: userId,
-    });
+
+    if (!userId) {
+      return res.status(403).json({ message: "Invalid token payload" });
+    }
+
+    const tokens = generateTokens({ id: userId });
 
     setRefreshTokenCookie(res, tokens.refreshToken);
     return res.status(200).json({ accessToken: tokens.accessToken });
   } catch (error: any) {
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
