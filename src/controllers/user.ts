@@ -49,7 +49,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     }
 
     let updatedData = req.body;
-    const { password } = updatedData;
+    const { password, username, email } = updatedData;
 
     if (password) {
       if (!validPasswordLength(password)) {
@@ -61,15 +61,15 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       updatedData = { ...updatedData, password: hashedPassword };
     }
 
-    if (updatedData.username) {
-      const existingUsername = await User.findOne(updatedData.username);
+    if (username) {
+      const existingUsername = await User.findOne({ username });
       if (existingUsername) {
         return res.status(409).json({ message: "Username already taken" });
       }
     }
 
-    if (updatedData.email) {
-      const existingEmail = await User.findOne(updatedData.email);
+    if (email) {
+      const existingEmail = await User.findOne({ email });
       if (existingEmail) {
         return res.status(409).json({ message: "Username already taken" });
       }
@@ -91,7 +91,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: error.message });
   }
 };
 

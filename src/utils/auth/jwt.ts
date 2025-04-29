@@ -17,7 +17,7 @@ export interface TokenResponse {
 
 export const generateTokens = (payload: TokenPayload): TokenResponse => {
   const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "5m",
   });
   const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
     expiresIn: "30d",
