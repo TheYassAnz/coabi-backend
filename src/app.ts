@@ -8,6 +8,7 @@ import helmet from "helmet";
 import cors from "cors";
 import authMiddleware from "./middleware/auth";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
 const clientOptions = {
   serverApi: { version: "1" as const, strict: true, deprecationErrors: true },
@@ -30,7 +31,7 @@ app.use(xssSanitizer); // Sanitize user inputs to prevent XSS
 app.use(helmet()); // Set security headers to protect the frontend from XSS
 
 const corsOptions: cors.CorsOptions = {
-  origin: [process.env.FRONTEND_URI || "http://localhost:3000"],
+  origin: [process.env.FRONTEND_URI || "exp://172.20.29.182:8081"],
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -39,6 +40,7 @@ const corsOptions: cors.CorsOptions = {
 app.use(morgan("dev"));
 
 app.use(cors(corsOptions)); // Enable CORS for frontend requests only
+app.use(cookieParser());
 app.use(authMiddleware);
 
 app.get("/", (req: Request, res: Response) => {

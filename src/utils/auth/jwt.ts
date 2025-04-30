@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Response } from "express";
+import dotenv from "dotenv";
+dotenv.config();
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
@@ -15,7 +17,7 @@ export interface TokenResponse {
 
 export const generateTokens = (payload: TokenPayload): TokenResponse => {
   const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "5m",
   });
   const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
     expiresIn: "30d",

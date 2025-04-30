@@ -15,7 +15,7 @@ describe("Refund API Integration Tests", () => {
       title: "Test Refund",
       toSplit: 200,
       userId: "67ecf50fe1ec65f57a487989",
-      roomateIds: ["67e922f5f031d41cd1da4fe4"],
+      roommateIds: ["67e922f5f031d41cd1da4fe4"],
     };
 
     const response = await request(app)
@@ -33,7 +33,7 @@ describe("Refund API Integration Tests", () => {
       title: "",
       toSplit: -100,
       userId: "",
-      roomateIds: [],
+      roommateIds: [],
     };
 
     const response = await request(app)

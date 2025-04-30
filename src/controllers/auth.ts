@@ -7,7 +7,6 @@ import {
   setRefreshTokenCookie,
   verifyRefreshToken,
 } from "../utils/auth/jwt";
-import { csrfTokens, generateCsrfToken } from "../utils/auth/csrf";
 
 const register = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -17,6 +16,17 @@ const register = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({
         message: "Password must be between 8 and 72 characters.",
       });
+    }
+
+    const existingUsername = await User.findOne({ username });
+
+    if (existingUsername) {
+      return res.status(409).json({ message: "Username already taken" });
+    }
+
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(409).json({ message: "Email already taken" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,7 +39,10 @@ const register = async (req: Request, res: Response): Promise<any> => {
 
     await newUser.save();
 
-    res.status(201).json(newUser);
+    const { password: userPassword, ...userWithoutPassword } =
+      newUser.toObject();
+
+    res.status(201).json(userWithoutPassword);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
@@ -50,14 +63,14 @@ const login = async (req: Request, res: Response): Promise<any> => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      res.status(404).json({ message: "Not found" });
+      res.status(404).json({ message: "User does not exist" });
       return;
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      res.status(401).json({ message: "Client error." });
+      res.status(401).json({ message: "Incorrect credentials" });
       return;
     }
 
@@ -66,28 +79,9 @@ const login = async (req: Request, res: Response): Promise<any> => {
     });
     setRefreshTokenCookie(res, refreshToken);
 
-    res.status(200).json({ token: accessToken });
+    res.status(200).json({ accessToken: accessToken });
   } catch (error: any) {
     res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const csrf = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const secret = await csrfTokens.secret();
-    const token = await generateCsrfToken(secret);
-
-    res.cookie("csrfSecret", secret, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
-
-    return res.status(200).json({ token: token });
-  } catch (error) {
-    return res.status(403).json({ error: "Invalid csrf token" });
   }
 };
 
@@ -96,26 +90,32 @@ const refresh = async (req: Request, res: Response): Promise<any> => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ error: "No refresh token provided" });
-    }
-
-    const decoded = verifyRefreshToken(refreshToken);
-
-    if (!decoded) {
       return res
         .status(401)
-        .json({ message: "Invalid or expired refresh token" });
+        .json({ message: "No refresh token provided", refreshToken });
+    }
+
+    let decoded;
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ message: "Invalid refresh token", decoded });
     }
 
     const userId = typeof decoded === "string" ? decoded : decoded.id;
-    const tokens = generateTokens({
-      id: userId,
-    });
+
+    if (!userId) {
+      return res.status(403).json({ message: "Invalid token payload" });
+    }
+
+    const tokens = generateTokens({ id: userId });
 
     setRefreshTokenCookie(res, tokens.refreshToken);
-    return res.status(200).json({ token: tokens.accessToken });
+    return res.status(200).json({ accessToken: tokens.accessToken });
   } catch (error: any) {
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -131,7 +131,6 @@ const logout = async (req: Request, res: Response): Promise<any> => {
 export default {
   register,
   login,
-  csrf,
   refresh,
   logout,
 };
