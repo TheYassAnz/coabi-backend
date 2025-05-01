@@ -10,6 +10,7 @@ interface QueryParamsUsers {
     lastName?: { $regex: string; $options: string };
     username?: { $regex: string; $options: string };
   }[];
+  accommodationId?: mongoose.Types.ObjectId;
 }
 
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
@@ -149,7 +150,7 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
 
 const filterUsers = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name } = req.query;
+    const { name, accommodationId } = req.query;
 
     const params: QueryParamsUsers = {};
 
@@ -160,6 +161,13 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
         { lastName: regex },
         { username: regex },
       ];
+    }
+
+    if (accommodationId && typeof accommodationId === "string") {
+      if (!mongoose.Types.ObjectId.isValid(accommodationId)) {
+        return res.status(400).json({ message: "Bad request" });
+      }
+      params.accommodationId = new mongoose.Types.ObjectId(accommodationId);
     }
 
     const users = await User.find(params).select("-password");
