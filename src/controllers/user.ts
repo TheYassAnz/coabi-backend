@@ -49,17 +49,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     }
 
     let updatedData = req.body;
-    const { password, username, email } = updatedData;
-
-    if (password) {
-      if (!validPasswordLength(password)) {
-        return res.status(400).json({
-          message: "Password must be between 8 and 72 characters.",
-        });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updatedData = { ...updatedData, password: hashedPassword };
-    }
+    const { username, email } = updatedData;
 
     if (username) {
       const existingUsername = await User.findOne({ username });
@@ -86,6 +76,52 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
 
     const { password: userPassword, ...userWithoutPassword } = user.toObject();
 
+    return res.status(200).json(userWithoutPassword);
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const updatePasswordById = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const id = req.params.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request" });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    if (newPassword) {
+      if (!validPasswordLength(newPassword)) {
+        return res.status(400).json({
+          message: "Password must be between 8 and 72 characters.",
+        });
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+    } else {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
     return res.status(200).json(userWithoutPassword);
   } catch (error: any) {
     if (error.name === "ValidationError") {
@@ -140,6 +176,7 @@ export default {
   getAllUsers,
   getUserById,
   updateUserById,
+  updatePasswordById,
   deleteUserById,
   filterUsers,
 };
