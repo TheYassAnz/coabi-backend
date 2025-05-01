@@ -63,14 +63,14 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
 
     if (username) {
       const existingUsername = await User.findOne({ username });
-      if (existingUsername) {
+      if (existingUsername && existingUsername._id.toString() !== id) {
         return res.status(409).json({ message: "Username already taken" });
       }
     }
 
     if (email) {
       const existingEmail = await User.findOne({ email });
-      if (existingEmail) {
+      if (existingEmail && existingEmail._id.toString() !== id) {
         return res.status(409).json({ message: "Username already taken" });
       }
     }
