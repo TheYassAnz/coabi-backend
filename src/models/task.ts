@@ -19,7 +19,7 @@ const taskSchema = new Schema<Task>(
       default: null,
       maxlength: 200,
     },
-    weekly: { type: Boolean, required: true },
+    weekly: { type: Boolean, required: false, default: false }, // ne pas utiliser pour l'instant
     done: { type: Boolean, required: false, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     accommodationId: {
