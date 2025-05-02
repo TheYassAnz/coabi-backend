@@ -1,6 +1,7 @@
 import Task from "../models/task";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 
 interface QueryParamsTasks {
   name?: {
@@ -10,10 +11,15 @@ interface QueryParamsTasks {
   weekly?: boolean;
   done?: boolean;
   userId?: string;
+  accommodationId?: mongoose.Types.ObjectId;
 }
 
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
+    const role = req.role;
+    if (role && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const tasks = await Task.find();
     return res.status(200).json(tasks);
   } catch (error: any) {
@@ -25,13 +31,17 @@ const getAllTasks = async (req: Request, res: Response): Promise<any> => {
 
 const createTask = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, description, weekly, done, userId, accommodationId } =
-      req.body;
+    const { name, description, userId, accommodationId } = req.body;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
+
+    if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     const newTask = new Task({
       name,
       description,
-      weekly,
       userId,
       accommodationId,
     });
@@ -51,6 +61,8 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
 const getTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -60,6 +72,16 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
 
     if (!task) {
       return res.status(404).json({ message: "Not found" });
+    }
+
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        task.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     return res.status(200).json(task);
@@ -72,21 +94,33 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
 
 const updateTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
+    const updateData = req.body;
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const task = await Task.findByIdAndUpdate(
-      id,
-      { ...req.body },
-      { new: true, runValidators: true },
-    );
+    const task = await Task.findById(id);
 
     if (!task) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        task.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    task.set(updateData);
+    await task.save();
 
     return res.status(200).json(task);
   } catch (error: any) {
@@ -102,16 +136,30 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
 const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const task = await Task.findByIdAndDelete(id);
+    const task = await Task.findById(id);
 
     if (!task) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        task.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    await task.deleteOne();
 
     return res.sendStatus(204);
   } catch (error: any) {
@@ -124,6 +172,8 @@ const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
 const filterTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, weekly, done, userId } = req.query;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     const params: QueryParamsTasks = {};
 
@@ -141,6 +191,10 @@ const filterTasks = async (req: Request, res: Response): Promise<any> => {
 
     if (userId) {
       params.userId = userId as string;
+    }
+
+    if (role && role !== "admin" && userAccommodationId) {
+      params.accommodationId = new mongoose.Types.ObjectId(userAccommodationId);
     }
 
     const events = await Task.find(params);

@@ -2,12 +2,20 @@ import Accommodation from "../models/accommodation";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { generateRandomCode } from "../utils/utils";
+import {
+  hasAccessToAccommodation,
+  canModifyAccommodation,
+} from "../utils/auth/accommodation";
 
 const getAllAccommodations = async (
   req: Request,
   res: Response,
 ): Promise<any> => {
   try {
+    const role = req.role;
+    if (role && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const accommodations = await Accommodation.find();
     return res.status(200).json(accommodations);
   } catch (error: any) {
@@ -57,8 +65,15 @@ const getAccommodationById = async (
 ): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
+    }
+
+    if (!hasAccessToAccommodation(role, userAccommodationId, id)) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     const accommodation = await Accommodation.findById(id);
@@ -78,19 +93,25 @@ const updateAccommodationById = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const { name, location, postalCode, country } = req.body;
-    const accommodationId = req.params.id;
+    const updateData = req.body;
+    const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request" });
+    }
+
+    if (!canModifyAccommodation(role, userAccommodationId, id)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     const accommodation = await Accommodation.findByIdAndUpdate(
-      accommodationId,
-      {
-        name,
-        location,
-        postalCode,
-        country,
-      },
+      id,
+      updateData,
       { new: true, runValidators: true },
     );
+
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -109,15 +130,25 @@ const deleteAccommodationById = async (
 ): Promise<any> => {
   try {
     const id = req.params.id;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const accommodation = await Accommodation.findByIdAndDelete(id);
+    const accommodation = await Accommodation.findById(id);
+
     if (!accommodation) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (!canModifyAccommodation(role, userAccommodationId, id)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    await accommodation.deleteOne();
+
     return res.sendStatus(204);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
