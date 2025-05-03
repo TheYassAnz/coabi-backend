@@ -29,8 +29,11 @@ const authMiddleware = async (
 
   try {
     const decoded = verifyAccessToken(token);
-    req.userId = decoded;
-    const user = await User.findById(decoded);
+    if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    req.userId = decoded.id;
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -38,7 +41,7 @@ const authMiddleware = async (
     req.role = user.role;
     next();
   } catch (error: any) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    return res.status(401).json({ message: "Invalid or expired token", error });
   }
 };
 
