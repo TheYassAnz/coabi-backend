@@ -15,6 +15,10 @@ interface QueryParamsUsers {
 
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
+    const role = req.role;
+    if (role && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const users = await User.find().select("-password");
     return res.json(users);
   } catch (error: any) {
@@ -25,8 +29,14 @@ const getAllUsers = async (req: Request, res: Response): Promise<any> => {
 const getUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const userId = req.userId;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
+    }
+
+    if (userId && userId !== id) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     const user = await User.findById(id).select("-password");
@@ -44,9 +54,14 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
 const updateUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
+    const userId = req.userId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
+    }
+
+    if (userId && userId !== id) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     let updatedData = req.body;
@@ -92,10 +107,15 @@ const updatePasswordById = async (
 ): Promise<any> => {
   try {
     const id = req.params.id;
+    const userId = req.userId;
     const { currentPassword, newPassword } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
+    }
+
+    if (userId && userId !== id) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     const user = await User.findById(id);
@@ -135,9 +155,14 @@ const updatePasswordById = async (
 const deleteUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
+    const userId = req.userId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
+    }
+
+    if (userId && userId !== id) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     await User.findByIdAndDelete(id);
@@ -150,7 +175,9 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
 
 const filterUsers = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name, accommodationId } = req.query;
+    const { name } = req.query;
+    const role = req.role;
+    const accommodationId = req.accommodationId;
 
     const params: QueryParamsUsers = {};
 
@@ -163,15 +190,11 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
       ];
     }
 
-    if (accommodationId && typeof accommodationId === "string") {
-      if (!mongoose.Types.ObjectId.isValid(accommodationId)) {
-        return res.status(400).json({ message: "Bad request" });
-      }
+    if (role && role !== "admin" && accommodationId) {
       params.accommodationId = new mongoose.Types.ObjectId(accommodationId);
     }
 
     const users = await User.find(params).select("-password");
-
     return res.status(200).json(users);
   } catch (error: any) {
     return res.status(500).json({

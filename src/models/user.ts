@@ -10,6 +10,7 @@ interface User extends Document {
   description: string | null;
   email: string;
   phoneNumber: string | null;
+  role: "user" | "moderator" | "admin";
   profilePictureId: Types.ObjectId | null;
   accommodationId: Types.ObjectId | null;
 }
@@ -40,6 +41,12 @@ const userSchema = new Schema<User>(
       unique: false,
       default: null,
       maxlength: 15,
+    },
+    role: {
+      type: String,
+      required: false,
+      enum: ["user", "moderator", "admin"],
+      default: "user",
     },
     profilePictureId: {
       type: Schema.Types.ObjectId,

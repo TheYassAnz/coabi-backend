@@ -1,6 +1,7 @@
 import Event from "../models/event";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 
 interface QueryParamsEvents {
   title?: {
@@ -13,10 +14,15 @@ interface QueryParamsEvents {
   };
   endDate?: Date;
   userId?: string;
+  accommodationId?: mongoose.Types.ObjectId;
 }
 
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
+    const role = req.role;
+    if (role && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const events = await Event.find();
     return res.status(200).json(events);
   } catch (error: any) {
@@ -36,6 +42,12 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
       userId,
       accommodationId,
     } = req.body;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
+
+    if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     const newEvent = new Event({
       title,
@@ -61,6 +73,8 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
 const getEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -70,6 +84,16 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
 
     if (!event) {
       return res.status(404).json({ message: "Not found" });
+    }
+
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        event.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     return res.status(200).json(event);
@@ -82,21 +106,33 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
 
 const updateEventById = async (req: Request, res: Response): Promise<any> => {
   try {
+    const updateData = req.body;
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const event = await Event.findByIdAndUpdate(
-      id,
-      { ...req.body },
-      { new: true, runValidators: true },
-    );
+    const event = await Event.findById(id);
 
     if (!event) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        event.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    event.set(updateData);
+    await event.save();
 
     return res.status(200).json(event);
   } catch (error: any) {
@@ -112,16 +148,30 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
 const deleteEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const event = await Event.findByIdAndDelete(id);
+    const event = await Event.findById(id);
 
     if (!event) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        event.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    await event.deleteOne();
 
     return res.sendStatus(204);
   } catch (error: any) {
@@ -134,6 +184,8 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
 const filterEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, plannedDateStart, plannedDateEnd, userId } = req.query;
+    const role = req.role;
+    const accommodationId = req.accommodationId;
 
     const params: QueryParamsEvents = {};
 
@@ -153,6 +205,10 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
 
     if (userId) {
       params.userId = userId as string;
+    }
+
+    if (role && role !== "admin" && accommodationId) {
+      params.accommodationId = new mongoose.Types.ObjectId(accommodationId);
     }
 
     const events = await Event.find(params);

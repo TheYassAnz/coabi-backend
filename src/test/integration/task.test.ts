@@ -14,8 +14,6 @@ describe("Task API Integration Tests", () => {
     const taskData = {
       name: "Test Task",
       description: "This is a test task",
-      weekly: true,
-      done: false,
       userId: "67ecf50fe1ec65f57a487989",
       accommodationId: "67e922f5f031d41cd1da4fe4",
     };

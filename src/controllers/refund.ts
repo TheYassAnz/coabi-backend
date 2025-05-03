@@ -1,7 +1,9 @@
 import Refund from "../models/refund";
+import User from "../models/user";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { split } from "../utils/utils";
+import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 
 interface QueryParamsRefunds {
   title?: {
@@ -17,6 +19,10 @@ interface QueryParamsRefunds {
 
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
+    const role = req.role;
+    if (role && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const refunds = await Refund.find();
     return res.json(refunds);
   } catch (error: any) {
@@ -29,6 +35,7 @@ const createRefund = async (
   toRefund: number,
   userId: string,
   roommateId: string,
+  res: Response,
 ): Promise<any> => {
   try {
     const newRefund = new Refund({ title, toRefund, userId, roommateId });
@@ -38,15 +45,34 @@ const createRefund = async (
     return newRefund;
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      throw new Error("ValidationError");
+      return res.status(400).json({ message: "Bad request" });
     }
-    throw new Error("InternalServerError");
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const createRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, toSplit, userId, roommateIds } = req.body; // roommateIds is a string[]
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
+    const requestUserId = req.userId;
+
+    if (requestUserId && requestUserId !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    let roommates = await User.find({ _id: { $in: roommateIds } });
+
+    if (role && role !== "admin" && userAccommodationId) {
+      roommates = roommates.filter(
+        (roommate: any) =>
+          roommate.accommodationId.toString() === userAccommodationId,
+      );
+      if (roommates.length === 0) {
+        return res.status(404).json({ message: "Not found" });
+      }
+    }
 
     if (toSplit < 0) {
       return res.status(400).json({ message: "Bad request" });
@@ -60,7 +86,7 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
 
     const newRefunds = await Promise.all(
       roommateIds.map(async (roommateId: string) => {
-        return await createRefund(title, toRefund, userId, roommateId);
+        return await createRefund(title, toRefund, userId, roommateId, res);
       }),
     );
 
@@ -76,6 +102,8 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
 const getRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -85,6 +113,26 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
 
     if (!refund) {
       return res.status(404).json({ message: "Not found" });
+    }
+
+    if (userAccommodationId) {
+      const refundOwner = await User.findById(refund.userId);
+
+      if (!refundOwner) {
+        return res.status(404).json({ message: "Not found" });
+      }
+
+      if (
+        (refundOwner.accommodationId &&
+          !hasAccessToAccommodation(
+            role,
+            userAccommodationId,
+            refundOwner.accommodationId.toString(),
+          )) ||
+        !!refundOwner.accommodationId
+      ) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
     }
 
     return res.status(200).json(refund);
