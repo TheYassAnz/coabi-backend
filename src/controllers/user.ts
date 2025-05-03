@@ -10,6 +10,7 @@ interface QueryParamsUsers {
     lastName?: { $regex: string; $options: string };
     username?: { $regex: string; $options: string };
   }[];
+  accommodationId?: mongoose.Types.ObjectId;
 }
 
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
@@ -49,28 +50,18 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     }
 
     let updatedData = req.body;
-    const { password, username, email } = updatedData;
-
-    if (password) {
-      if (!validPasswordLength(password)) {
-        return res.status(400).json({
-          message: "Password must be between 8 and 72 characters.",
-        });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updatedData = { ...updatedData, password: hashedPassword };
-    }
+    const { username, email } = updatedData;
 
     if (username) {
       const existingUsername = await User.findOne({ username });
-      if (existingUsername) {
+      if (existingUsername && existingUsername._id.toString() !== id) {
         return res.status(409).json({ message: "Username already taken" });
       }
     }
 
     if (email) {
       const existingEmail = await User.findOne({ email });
-      if (existingEmail) {
+      if (existingEmail && existingEmail._id.toString() !== id) {
         return res.status(409).json({ message: "Username already taken" });
       }
     }
@@ -86,6 +77,52 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
 
     const { password: userPassword, ...userWithoutPassword } = user.toObject();
 
+    return res.status(200).json(userWithoutPassword);
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Bad request" });
+    }
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const updatePasswordById = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const id = req.params.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Bad request" });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    if (newPassword) {
+      if (!validPasswordLength(newPassword)) {
+        return res.status(400).json({
+          message: "Password must be between 8 and 72 characters.",
+        });
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+    } else {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
     return res.status(200).json(userWithoutPassword);
   } catch (error: any) {
     if (error.name === "ValidationError") {
@@ -113,7 +150,7 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
 
 const filterUsers = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name } = req.query;
+    const { name, accommodationId } = req.query;
 
     const params: QueryParamsUsers = {};
 
@@ -124,6 +161,13 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
         { lastName: regex },
         { username: regex },
       ];
+    }
+
+    if (accommodationId && typeof accommodationId === "string") {
+      if (!mongoose.Types.ObjectId.isValid(accommodationId)) {
+        return res.status(400).json({ message: "Bad request" });
+      }
+      params.accommodationId = new mongoose.Types.ObjectId(accommodationId);
     }
 
     const users = await User.find(params).select("-password");
@@ -140,6 +184,7 @@ export default {
   getAllUsers,
   getUserById,
   updateUserById,
+  updatePasswordById,
   deleteUserById,
   filterUsers,
 };

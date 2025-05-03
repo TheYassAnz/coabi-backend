@@ -7,6 +7,7 @@ router.get("/", userCtrl.getAllUsers);
 router.get("/filter", userCtrl.filterUsers);
 router.get("/:id", userCtrl.getUserById);
 router.patch("/:id", userCtrl.updateUserById);
+router.patch("/password/:id", userCtrl.updatePasswordById);
 router.delete("/:id", userCtrl.deleteUserById);
 
 export default router;
