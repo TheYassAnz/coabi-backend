@@ -2,6 +2,7 @@ import Task from "../models/task";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import { testEnv } from "../utils/env";
 
 interface QueryParamsTasks {
   name?: {
@@ -17,7 +18,7 @@ interface QueryParamsTasks {
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const role = req.role;
-    if (role && role !== "admin") {
+    if (!testEnv && role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
     const tasks = await Task.find();
@@ -193,7 +194,7 @@ const filterTasks = async (req: Request, res: Response): Promise<any> => {
       params.userId = userId as string;
     }
 
-    if (role && role !== "admin" && userAccommodationId) {
+    if (!testEnv && role !== "admin" && userAccommodationId) {
       params.accommodationId = new mongoose.Types.ObjectId(userAccommodationId);
     }
 

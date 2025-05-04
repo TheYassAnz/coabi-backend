@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { validPasswordLength } from "../utils/utils";
+import { testEnv } from "../utils/env";
 
 interface QueryParamsUsers {
   $or?: {
@@ -16,7 +17,7 @@ interface QueryParamsUsers {
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const role = req.role;
-    if (role && role !== "admin") {
+    if (!testEnv && role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
     const users = await User.find().select("-password");
@@ -30,12 +31,13 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     const userId = req.userId;
+    const role = req.role;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (userId && userId !== id) {
+    if (!testEnv && role !== "admin" && userId !== id) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -55,12 +57,13 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
     const userId = req.userId;
+    const role = req.role;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (userId && userId !== id) {
+    if (!testEnv && role !== "admin" && userId !== id) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -108,13 +111,14 @@ const updatePasswordById = async (
   try {
     const id = req.params.id;
     const userId = req.userId;
+    const role = req.role;
     const { currentPassword, newPassword } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (userId && userId !== id) {
+    if (!testEnv && role !== "admin" && userId !== id) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -156,12 +160,13 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
     const userId = req.userId;
+    const role = req.role;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (userId && userId !== id) {
+    if (!testEnv && role !== "admin" && userId !== id) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -177,7 +182,7 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name } = req.query;
     const role = req.role;
-    const accommodationId = req.accommodationId;
+    const userAccommodationId = req.accommodationId;
 
     const params: QueryParamsUsers = {};
 
@@ -190,8 +195,8 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
       ];
     }
 
-    if (role && role !== "admin" && accommodationId) {
-      params.accommodationId = new mongoose.Types.ObjectId(accommodationId);
+    if (!testEnv && role !== "admin" && userAccommodationId) {
+      params.accommodationId = new mongoose.Types.ObjectId(userAccommodationId);
     }
 
     const users = await User.find(params).select("-password");

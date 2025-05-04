@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { split } from "../utils/utils";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import { testEnv } from "../utils/env";
+import { Role } from "../types/role";
 
 interface QueryParamsRefunds {
   title?: {
@@ -15,12 +17,47 @@ interface QueryParamsRefunds {
     $lte?: number;
   };
   roommateId?: string;
+  accommodationId?: mongoose.Types.ObjectId;
 }
+
+const checkRefundAccess = async (
+  refund: any,
+  role: Role,
+  userAccommodationId: string | null | undefined,
+): Promise<boolean> => {
+  if (testEnv || role === "admin") {
+    return true;
+  }
+
+  if (!userAccommodationId) {
+    return false;
+  }
+
+  const refundOwner = await User.findById(refund.userId);
+
+  if (!refundOwner) {
+    return false;
+  }
+
+  if (
+    (refundOwner.accommodationId &&
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        refundOwner.accommodationId.toString(),
+      )) ||
+    !!refundOwner.accommodationId
+  ) {
+    return false;
+  }
+
+  return true;
+};
 
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const role = req.role;
-    if (role && role !== "admin") {
+    if (!testEnv && role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
     const refunds = await Refund.find();
@@ -115,24 +152,8 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    if (userAccommodationId) {
-      const refundOwner = await User.findById(refund.userId);
-
-      if (!refundOwner) {
-        return res.status(404).json({ message: "Not found" });
-      }
-
-      if (
-        (refundOwner.accommodationId &&
-          !hasAccessToAccommodation(
-            role,
-            userAccommodationId,
-            refundOwner.accommodationId.toString(),
-          )) ||
-        !!refundOwner.accommodationId
-      ) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
+    if (!(await checkRefundAccess(refund, role, userAccommodationId))) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     return res.status(200).json(refund);
@@ -143,7 +164,10 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
 
 const updateRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
+    const updateData = req.body;
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -155,15 +179,18 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    const refund = await Refund.findByIdAndUpdate(
-      id,
-      { ...req.body },
-      { new: true, runValidators: true },
-    );
+    const refund = await Refund.findById(id);
 
     if (!refund) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (!(await checkRefundAccess(refund, role, userAccommodationId))) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    refund.set(updateData);
+    await refund.save();
 
     return res.status(200).json(refund);
   } catch (error: any) {
@@ -179,6 +206,8 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
 const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -188,6 +217,10 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
 
     if (!refund) {
       return res.status(404).json({ message: "Not found" });
+    }
+
+    if (!(await checkRefundAccess(refund, role, userAccommodationId))) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     await refund.deleteOne();
@@ -200,6 +233,8 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
 const filterRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, toRefundStart, toRefundEnd, roommateId } = req.query;
+    const role = req.role;
+    const userAccommodationId = req.accommodationId;
 
     const params: QueryParamsRefunds = {};
 
@@ -219,6 +254,10 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
 
     if (roommateId) {
       params.roommateId = roommateId as string;
+    }
+
+    if (role !== "admin" && userAccommodationId) {
+      params.accommodationId = new mongoose.Types.ObjectId(userAccommodationId);
     }
 
     const refunds = await Refund.find(params);

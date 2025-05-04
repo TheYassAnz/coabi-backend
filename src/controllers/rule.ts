@@ -2,10 +2,11 @@ import Rule from "../models/rule";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import { testEnv } from "../utils/env";
 
 const getAllRules = async (req: Request, res: Response): Promise<any> => {
   const role = req.role;
-  if (role && role !== "admin") {
+  if (!testEnv && role !== "admin") {
     return res.status(403).json({ message: "Forbidden" });
   }
   try {

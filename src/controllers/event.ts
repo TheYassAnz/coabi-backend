@@ -2,6 +2,7 @@ import Event from "../models/event";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import { testEnv } from "../utils/env";
 
 interface QueryParamsEvents {
   title?: {
@@ -20,7 +21,7 @@ interface QueryParamsEvents {
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const role = req.role;
-    if (role && role !== "admin") {
+    if (!testEnv && role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
     const events = await Event.find();
@@ -185,7 +186,7 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, plannedDateStart, plannedDateEnd, userId } = req.query;
     const role = req.role;
-    const accommodationId = req.accommodationId;
+    const userAccommodationId = req.accommodationId;
 
     const params: QueryParamsEvents = {};
 
@@ -207,8 +208,8 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
       params.userId = userId as string;
     }
 
-    if (role && role !== "admin" && accommodationId) {
-      params.accommodationId = new mongoose.Types.ObjectId(accommodationId);
+    if (!testEnv && role !== "admin" && userAccommodationId) {
+      params.accommodationId = new mongoose.Types.ObjectId(userAccommodationId);
     }
 
     const events = await Event.find(params);

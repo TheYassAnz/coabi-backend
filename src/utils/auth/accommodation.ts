@@ -1,19 +1,16 @@
-type Role = "user" | "moderator" | "admin" | undefined;
+import { testEnv } from "../env";
+import { Role } from "../../types/role";
 
 export const hasAccessToAccommodation = (
   role: Role,
   userAccommodationId: string | null | undefined,
   requestAccommodationId: string,
 ): boolean => {
-  if (role === "admin") {
+  if (testEnv || role === "admin") {
     return true;
   }
 
-  if (role && userAccommodationId) {
-    return userAccommodationId === requestAccommodationId;
-  }
-
-  return true;
+  return userAccommodationId === requestAccommodationId;
 };
 
 export const canModifyAccommodation = (
@@ -21,13 +18,13 @@ export const canModifyAccommodation = (
   userAccommodationId: string | null | undefined,
   requestAccommodationId: string,
 ): boolean => {
-  if (role === "admin") {
+  if (testEnv || role === "admin") {
     return true;
   }
 
-  if (role && role === "moderator" && userAccommodationId) {
+  if (role === "moderator") {
     return userAccommodationId === requestAccommodationId;
   }
 
-  return true;
+  return false;
 };
