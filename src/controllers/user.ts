@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { validPasswordLength } from "../utils/utils";
 import { testEnv } from "../utils/env";
+import { Role } from "../types/role";
 
 interface QueryParamsUsers {
   $or?: {
@@ -11,6 +12,7 @@ interface QueryParamsUsers {
     lastName?: { $regex: string; $options: string };
     username?: { $regex: string; $options: string };
   }[];
+  role?: Role;
   accommodationId?: mongoose.Types.ObjectId;
 }
 
@@ -183,6 +185,7 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
     const { name } = req.query;
     const role = req.role;
     const userAccommodationId = req.accommodationId;
+    const possibleRoles = ["user", "moderator", "admin"];
 
     const params: QueryParamsUsers = {};
 
@@ -193,6 +196,10 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
         { lastName: regex },
         { username: regex },
       ];
+    }
+
+    if (role) {
+      params.role = possibleRoles.includes(role) ? role : "user";
     }
 
     if (!testEnv && role !== "admin" && userAccommodationId) {
