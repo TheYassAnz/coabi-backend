@@ -106,7 +106,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-const updatePasswordById = async (
+const updateUserPasswordById = async (
   req: Request,
   res: Response,
 ): Promise<any> => {
@@ -135,19 +135,18 @@ const updatePasswordById = async (
       return res.status(400).json({ message: "Current password is incorrect" });
     }
 
-    if (newPassword) {
-      if (!validPasswordLength(newPassword)) {
-        return res.status(400).json({
-          message: "Password must be between 8 and 72 characters.",
-        });
-      }
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      await user.save();
-    } else {
+    if (!newPassword) {
       return res.status(400).json({ message: "New password is required" });
     }
 
+    if (!validPasswordLength(newPassword)) {
+      return res.status(400).json({
+        message: "Password must be between 8 and 72 characters.",
+      });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
     const { password: userPassword, ...userWithoutPassword } = user.toObject();
     return res.status(200).json(userWithoutPassword);
   } catch (error: any) {
@@ -219,7 +218,7 @@ export default {
   getAllUsers,
   getUserById,
   updateUserById,
-  updatePasswordById,
+  updateUserPasswordById,
   deleteUserById,
   filterUsers,
 };
