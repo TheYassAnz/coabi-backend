@@ -13,15 +13,6 @@ const authMiddleware = async (
     return next();
   }
 
-  // exclude routes from authentication
-  const excludedRoutes = ["/register", "/login", "/refresh", "/logout"];
-
-  for (const route of excludedRoutes) {
-    if (req.path.includes(route)) {
-      return next();
-    }
-  }
-
   const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {

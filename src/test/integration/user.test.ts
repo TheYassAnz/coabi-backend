@@ -83,6 +83,7 @@ describe("User API Integration Tests", () => {
 
     response.body;
     expect(response.body).toHaveProperty("_id", userId);
+    expect(response.body).toHaveProperty("firstName", "Jojo");
   });
 
   test("GET /users/filter should return tasks by filter", async () => {

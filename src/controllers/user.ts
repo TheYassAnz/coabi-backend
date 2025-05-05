@@ -95,7 +95,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       }
     }
 
-    const user = await User.findById(id, updatedData);
+    const user = await User.findById(id);
 
     if (!user) {
       return res.status(404).json({ message: "Not found" });
