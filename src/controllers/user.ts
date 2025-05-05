@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { validPasswordLength } from "../utils/utils";
 import { testEnv } from "../utils/env";
 import { Role } from "../types/role";
+import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 
 interface QueryParamsUsers {
   $or?: {
@@ -59,18 +60,19 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
     const userId = req.userId;
-    const role = req.role;
+    const userRole = req.role;
+    const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
     }
 
-    if (!testEnv && role !== "admin" && userId !== id) {
+    if (!testEnv && userRole === "user" && userId !== id) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
     let updatedData = req.body;
-    const { username, email } = updatedData;
+    const { username, email, role } = updatedData;
 
     if (username) {
       const existingUsername = await User.findOne({ username });
@@ -86,14 +88,40 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       }
     }
 
-    const user = await User.findByIdAndUpdate(id, updatedData, {
-      new: true,
-      runValidators: true,
-    });
+    if (role) {
+      const possibleRoles = ["user", "moderator"];
+      if (!possibleRoles.includes(role)) {
+        return res.status(400).json({ message: "Bad request" });
+      }
+    }
+
+    const user = await User.findById(id, updatedData);
 
     if (!user) {
       return res.status(404).json({ message: "Not found" });
     }
+
+    if (!testEnv && user.role === "user" && role === "moderator") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    if (!testEnv && userRole === "moderator") {
+      if (!user.accommodationId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      if (
+        !hasAccessToAccommodation(
+          userRole,
+          userAccommodationId,
+          user.accommodationId.toString(),
+        )
+      ) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+
+    user.set(updatedData);
+    await user.save();
 
     const { password: userPassword, ...userWithoutPassword } = user.toObject();
 
