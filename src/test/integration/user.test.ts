@@ -70,6 +70,22 @@ describe("User API Integration Tests", () => {
     expect(response.body).toHaveProperty("firstName", "Jojo");
   });
 
+  test("PATCH /users/password/:id should update a user password by ID", async () => {
+    const updatedData = {
+      currentPassword: "password1234",
+      newPassword: "password12345",
+    };
+
+    const response = await request(app)
+      .patch(`/api/users/password/${userId}`)
+      .send(updatedData)
+      .expect(200);
+
+    response.body;
+    expect(response.body).toHaveProperty("_id", userId);
+    expect(response.body).toHaveProperty("firstName", "Jojo");
+  });
+
   test("GET /users/filter should return tasks by filter", async () => {
     const params = {
       name: "Jo",

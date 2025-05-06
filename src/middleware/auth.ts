@@ -1,24 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "../utils/auth/jwt";
 import User from "../models/user";
+import { testEnv } from "../utils/env";
 
 const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<any> => {
-  if (process.env.MONGODB_URI?.includes("test")) {
-    // Skip authentication in for github actions tests
+  if (testEnv) {
+    // Skip authentication for tests
     return next();
-  }
-
-  // exclude routes from authentication
-  const excludedRoutes = ["/register", "/login", "/refresh", "/logout"];
-
-  for (const route of excludedRoutes) {
-    if (req.path.includes(route)) {
-      return next();
-    }
   }
 
   const token = req.header("Authorization")?.split(" ")[1];
@@ -37,7 +29,9 @@ const authMiddleware = async (
     if (!user) {
       return res.status(404).json({ message: "Not found" });
     }
-    req.accommodationId = user.accommodationId?.toString();
+    req.accommodationId = user.accommodationId
+      ? user.accommodationId.toString()
+      : null;
     req.role = user.role;
     next();
   } catch (error: any) {

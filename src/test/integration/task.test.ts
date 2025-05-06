@@ -57,26 +57,12 @@ describe("Task API Integration Tests", () => {
     expect(response.body).toHaveProperty("_id", taskId);
   });
 
-  test("GET /tasks/filter should return tasks by filter", async () => {
-    const params = {
-      weekly: true,
-      done: false,
-    };
-
-    const response = await request(app)
-      .get("/api/tasks/filter")
-      .query(params)
-      .expect(200);
-
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBeGreaterThan(0);
-  });
-
   test("PATCH /tasks/:id should update a task by ID", async () => {
     const updatedData = {
       name: "Updated Test Task",
       description: "This is an updated test task",
-      done: true,
+      weekly: "true",
+      done: "true",
     };
 
     const response = await request(app)
@@ -87,6 +73,21 @@ describe("Task API Integration Tests", () => {
     response.body;
     expect(response.body).toHaveProperty("_id", taskId);
     expect(response.body).toHaveProperty("done", true);
+  });
+
+  test("GET /tasks/filter should return tasks by filter", async () => {
+    const params = {
+      weekly: "true",
+      done: "true",
+    };
+
+    const response = await request(app)
+      .get("/api/tasks/filter")
+      .query(params)
+      .expect(200);
+
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
   });
 
   test("DELETE /tasks/:id should delete a task by ID", async () => {

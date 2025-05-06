@@ -6,7 +6,6 @@ import mongoSanitize from "express-mongo-sanitize";
 import { xssSanitizer } from "./middleware/xss-sanitizer";
 import helmet from "helmet";
 import cors from "cors";
-import authMiddleware from "./middleware/auth";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
@@ -41,7 +40,6 @@ app.use(morgan("dev"));
 
 app.use(cors(corsOptions)); // Enable CORS for frontend requests only
 app.use(cookieParser());
-app.use(authMiddleware);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello World!" });

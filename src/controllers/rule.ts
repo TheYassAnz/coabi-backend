@@ -2,14 +2,17 @@ import Rule from "../models/rule";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import { testEnv } from "../utils/env";
 
 const getAllRules = async (req: Request, res: Response): Promise<any> => {
-  const role = req.role;
-  if (role && role !== "admin") {
-    return res.status(403).json({ message: "Forbidden" });
-  }
   try {
-    const rules = await Rule.find();
+    const { role, accommodationId: userAccommodationId } = req;
+
+    const params =
+      !testEnv && role !== "admin" && userAccommodationId
+        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
+        : {};
+    const rules = await Rule.find(params);
     return res.status(200).json(rules);
   } catch (error: any) {
     return res.status(500).json({
@@ -21,8 +24,7 @@ const getAllRules = async (req: Request, res: Response): Promise<any> => {
 const createRule = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, description, accommodationId } = req.body;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
       return res.status(403).json({ message: "Forbidden" });
@@ -49,8 +51,7 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
 const getRuleById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -84,8 +85,7 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -124,8 +124,7 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
 const deleteRuleById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
