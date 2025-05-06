@@ -19,11 +19,14 @@ interface QueryParamsUsers {
 
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
-    const role = req.role;
-    if (!testEnv && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    const users = await User.find().select("-password");
+    const { role, accommodationId: userAccommodationId } = req;
+
+    const params =
+      !testEnv && role !== "admin" && userAccommodationId
+        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
+        : {};
+
+    const users = await User.find(params).select("-password");
     return res.json(users);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
@@ -33,8 +36,7 @@ const getAllUsers = async (req: Request, res: Response): Promise<any> => {
 const getUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const userId = req.userId;
-    const role = req.role;
+    const { userId, role } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -59,9 +61,11 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
 const updateUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
-    const userId = req.userId;
-    const userRole = req.role;
-    const userAccommodationId = req.accommodationId;
+    const {
+      userId,
+      role: userRole,
+      accommodationId: userAccommodationId,
+    } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -140,8 +144,7 @@ const updateUserPasswordById = async (
 ): Promise<any> => {
   try {
     const id = req.params.id;
-    const userId = req.userId;
-    const role = req.role;
+    const { userId, role } = req;
     const { currentPassword, newPassword } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -188,8 +191,7 @@ const updateUserPasswordById = async (
 const deleteUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
-    const userId = req.userId;
-    const role = req.role;
+    const { userId, role } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -210,8 +212,7 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
 const filterUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name } = req.query;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
     const possibleRoles = ["user", "moderator", "admin"];
 
     const params: QueryParamsUsers = {};

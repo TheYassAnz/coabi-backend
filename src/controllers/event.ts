@@ -20,11 +20,14 @@ interface QueryParamsEvents {
 
 const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   try {
-    const role = req.role;
-    if (!testEnv && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    const events = await Event.find();
+    const { role, accommodationId: userAccommodationId } = req;
+
+    const params =
+      !testEnv && role !== "admin" && userAccommodationId
+        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
+        : {};
+
+    const events = await Event.find(params);
     return res.status(200).json(events);
   } catch (error: any) {
     return res.status(500).json({
@@ -43,8 +46,7 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
       userId,
       accommodationId,
     } = req.body;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
       return res.status(403).json({ message: "Forbidden" });
@@ -74,8 +76,7 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
 const getEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -109,8 +110,7 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const updateData = req.body;
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -149,8 +149,7 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
 const deleteEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -185,8 +184,7 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
 const filterEvents = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, plannedDateStart, plannedDateEnd, userId } = req.query;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     const params: QueryParamsEvents = {};
 

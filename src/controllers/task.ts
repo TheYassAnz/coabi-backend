@@ -17,11 +17,13 @@ interface QueryParamsTasks {
 
 const getAllTasks = async (req: Request, res: Response): Promise<any> => {
   try {
-    const role = req.role;
-    if (!testEnv && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    const tasks = await Task.find();
+    const { role, accommodationId: userAccommodationId } = req;
+
+    const params =
+      !testEnv && role !== "admin" && userAccommodationId
+        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
+        : {};
+    const tasks = await Task.find(params);
     return res.status(200).json(tasks);
   } catch (error: any) {
     return res.status(500).json({
@@ -33,8 +35,7 @@ const getAllTasks = async (req: Request, res: Response): Promise<any> => {
 const createTask = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, description, userId, accommodationId } = req.body;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
       return res.status(403).json({ message: "Forbidden" });
@@ -62,8 +63,7 @@ const createTask = async (req: Request, res: Response): Promise<any> => {
 const getTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -97,8 +97,7 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const updateData = req.body;
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -137,8 +136,7 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
 const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -173,8 +171,7 @@ const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
 const filterTasks = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, weekly, done, userId } = req.query;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     const params: QueryParamsTasks = {};
 

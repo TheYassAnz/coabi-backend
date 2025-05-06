@@ -56,11 +56,13 @@ const checkRefundAccess = async (
 
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const role = req.role;
-    if (!testEnv && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    const refunds = await Refund.find();
+    const { role, accommodationId: userAccommodationId } = req;
+
+    const params =
+      !testEnv && role !== "admin" && userAccommodationId
+        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
+        : {};
+    const refunds = await Refund.find(params);
     return res.json(refunds);
   } catch (error: any) {
     return res.status(500).json({ message: "Internal server error" });
@@ -91,9 +93,11 @@ const createRefund = async (
 const createRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, toSplit, userId, roommateIds } = req.body; // roommateIds is a string[]
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
-    const requestUserId = req.userId;
+    const {
+      role,
+      accommodationId: userAccommodationId,
+      userId: requestUserId,
+    } = req;
 
     if (requestUserId && requestUserId !== userId) {
       return res.status(403).json({ message: "Forbidden" });
@@ -139,8 +143,7 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
 const getRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -166,8 +169,7 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const updateData = req.body;
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -206,8 +208,7 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
 const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -233,8 +234,7 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
 const filterRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const { title, toRefundStart, toRefundEnd, roommateId } = req.query;
-    const role = req.role;
-    const userAccommodationId = req.accommodationId;
+    const { role, accommodationId: userAccommodationId } = req;
 
     const params: QueryParamsRefunds = {};
 
