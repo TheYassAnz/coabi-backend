@@ -7,11 +7,22 @@ import { testEnv } from "../utils/env";
 const getAllRules = async (req: Request, res: Response): Promise<any> => {
   try {
     const { role, accommodationId: userAccommodationId } = req;
+    const { adminUI } = req.query;
 
-    const params =
-      !testEnv && role !== "admin" && userAccommodationId
-        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
-        : {};
+    if (!testEnv && !userAccommodationId && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    let params: any = {};
+
+    if (role !== "admin" && adminUI !== "true") {
+      if (userAccommodationId) {
+        params.accommodationId = new mongoose.Types.ObjectId(
+          userAccommodationId,
+        );
+      }
+    }
+
     const rules = await Rule.find(params);
     return res.status(200).json(rules);
   } catch (error: any) {

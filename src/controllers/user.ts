@@ -20,11 +20,21 @@ interface QueryParamsUsers {
 const getAllUsers = async (req: Request, res: Response): Promise<any> => {
   try {
     const { role, accommodationId: userAccommodationId } = req;
+    const { adminUI } = req.query;
 
-    const params =
-      !testEnv && role !== "admin" && userAccommodationId
-        ? { accommodationId: new mongoose.Types.ObjectId(userAccommodationId) }
-        : {};
+    if (!testEnv && !userAccommodationId && role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    let params: any = {};
+
+    if (role !== "admin" && adminUI !== "true") {
+      if (userAccommodationId) {
+        params.accommodationId = new mongoose.Types.ObjectId(
+          userAccommodationId,
+        );
+      }
+    }
 
     const users = await User.find(params).select("-password");
     return res.json(users);
@@ -36,20 +46,27 @@ const getAllUsers = async (req: Request, res: Response): Promise<any> => {
 const getUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const { userId, role } = req;
+    const { accommodationId: userAccommodationId, role } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
-    }
-
-    if (!testEnv && role !== "admin" && userId !== id) {
-      return res.status(403).json({ message: "Forbidden" });
     }
 
     const user = await User.findById(id).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "Not found" });
+    }
+
+    if (
+      user.accommodationId &&
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        user.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     return res.status(200).json(user);
@@ -88,7 +105,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     if (email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail && existingEmail._id.toString() !== id) {
-        return res.status(409).json({ message: "Username already taken" });
+        return res.status(409).json({ message: "Email already taken" });
       }
     }
 
@@ -211,9 +228,13 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
 
 const filterUsers = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { name } = req.query;
-    const { role, accommodationId: userAccommodationId } = req;
+    const { name, role } = req.query;
+    const { role: userRole, accommodationId: userAccommodationId } = req;
     const possibleRoles = ["user", "moderator", "admin"];
+
+    if (!testEnv && !userAccommodationId && userRole !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     const params: QueryParamsUsers = {};
 
@@ -226,11 +247,13 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
       ];
     }
 
-    if (role) {
-      params.role = possibleRoles.includes(role) ? role : "user";
+    if (typeof role === "string" && possibleRoles.includes(role)) {
+      params.role = role as Role;
+    } else if (role) {
+      params.role = "user";
     }
 
-    if (!testEnv && role !== "admin" && userAccommodationId) {
+    if (!testEnv && userRole !== "admin" && userAccommodationId) {
       params.accommodationId = new mongoose.Types.ObjectId(userAccommodationId);
     }
 
