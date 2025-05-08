@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
-import accommodation from "./accommodation";
 
 interface QueryParamsEvents {
   title?: {
@@ -25,7 +24,7 @@ const getAllEvents = async (req: Request, res: Response): Promise<any> => {
     const { adminUI } = req.query;
 
     if (!testEnv && !userAccommodationId && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     let params: any = {};
@@ -43,6 +42,7 @@ const getAllEvents = async (req: Request, res: Response): Promise<any> => {
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -60,7 +60,7 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
     const { role, accommodationId: userAccommodationId } = req;
 
     if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     const newEvent = new Event({
@@ -76,10 +76,13 @@ const createEvent = async (req: Request, res: Response): Promise<any> => {
     return res.status(201).json(newEvent);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -90,13 +93,17 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
     const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     const event = await Event.findById(id);
 
     if (!event) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "EVENT_NOT_FOUND" });
     }
 
     if (
@@ -106,13 +113,14 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
         event.accommodationId.toString(),
       )
     ) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     return res.status(200).json(event);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -124,13 +132,17 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
     const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     const event = await Event.findById(id);
 
     if (!event) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "EVENT_NOT_FOUND" });
     }
 
     if (
@@ -140,7 +152,7 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
         event.accommodationId.toString(),
       )
     ) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     event.set(updateData);
@@ -149,10 +161,13 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json(event);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -163,13 +178,17 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
     const { role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     const event = await Event.findById(id);
 
     if (!event) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "EVENT_NOT_FOUND" });
     }
 
     if (
@@ -179,7 +198,7 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
         event.accommodationId.toString(),
       )
     ) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     await event.deleteOne();
@@ -188,6 +207,7 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -198,7 +218,7 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
     const { role, accommodationId: userAccommodationId } = req;
 
     if (!testEnv && !userAccommodationId && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     const params: QueryParamsEvents = {};
@@ -231,6 +251,7 @@ const filterEvents = async (req: Request, res: Response): Promise<any> => {
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };

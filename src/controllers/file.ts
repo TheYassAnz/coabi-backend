@@ -56,7 +56,9 @@ export const upload = multer({
 const uploadFile = async (req: Request, res: Response): Promise<any> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded." });
+      return res
+        .status(400)
+        .json({ message: "No file uploaded.", code: "NO_FILE" });
     }
 
     const { description, userId } = req.body;
@@ -77,10 +79,13 @@ const uploadFile = async (req: Request, res: Response): Promise<any> => {
     res.status(201).json(newFile);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
     res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -90,13 +95,17 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "FILE_NOT_FOUND" });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
@@ -104,6 +113,7 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
   } catch (error: any) {
     res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
@@ -113,13 +123,17 @@ const deleteFileById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     const file = await FileModel.findById(id);
 
     if (!file) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "FILE_NOT_FOUND" });
     }
 
     const filePath = path.join(__dirname, "../../uploads", file._id);
@@ -130,6 +144,7 @@ const deleteFileById = async (req: Request, res: Response): Promise<any> => {
   } catch (error: any) {
     res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   }
 };
