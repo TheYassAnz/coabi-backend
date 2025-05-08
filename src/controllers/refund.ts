@@ -16,6 +16,7 @@ interface QueryParamsRefunds {
     $gte?: number;
     $lte?: number;
   };
+  userId?: string;
   roommateId?: string;
   accommodationId?: mongoose.Types.ObjectId;
 }
@@ -244,7 +245,7 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
 
 const filterRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, toRefundStart, toRefundEnd, roommateId } = req.query;
+    const { title, toRefundStart, toRefundEnd, userId, roommateId } = req.query;
     const { role, accommodationId: userAccommodationId } = req;
 
     if (!testEnv && !userAccommodationId && role !== "admin") {
@@ -265,6 +266,10 @@ const filterRefunds = async (req: Request, res: Response): Promise<any> => {
       if (toRefundEnd) {
         params.toRefund.$lte = Number(toRefundEnd as string);
       }
+    }
+
+    if (userId) {
+      params.userId = userId as string;
     }
 
     if (roommateId) {
