@@ -7,6 +7,7 @@ interface Refund extends Document {
   done: boolean;
   userId: Types.ObjectId;
   roommateId: Types.ObjectId;
+  accommodationId: Types.ObjectId;
 }
 
 const refundSchema = new Schema<Refund>(
@@ -16,6 +17,11 @@ const refundSchema = new Schema<Refund>(
     done: { type: Boolean, required: false, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     roommateId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      required: true,
+    },
   },
   { timestamps: true },
 );

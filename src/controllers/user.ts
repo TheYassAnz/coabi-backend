@@ -6,6 +6,7 @@ import { validPasswordLength } from "../utils/utils";
 import { testEnv } from "../utils/env";
 import { Role } from "../types/role";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import Accommodation from "../models/accommodation";
 
 interface QueryParamsUsers {
   $or?: {
@@ -52,6 +53,12 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Bad request" });
     }
 
+    if (!testEnv && role !== "admin" && id !== req.userId) {
+      if (role === "user") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+
     const user = await User.findById(id).select("-password");
 
     if (!user) {
@@ -59,12 +66,11 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
     }
 
     if (
+      !testEnv &&
+      role === "moderator" &&
       user.accommodationId &&
-      !hasAccessToAccommodation(
-        role,
-        userAccommodationId,
-        user.accommodationId.toString(),
-      )
+      (!userAccommodationId ||
+        user.accommodationId.toString() !== userAccommodationId.toString())
     ) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -141,6 +147,17 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       }
     }
 
+    const accommodationId = updatedData.accommodationId;
+
+    if (accommodationId) {
+      const accommodation = await Accommodation.findById(accommodationId);
+      if (!accommodation) {
+        return res
+          .status(404)
+          .json({ message: "Accommodation does not exist" });
+      }
+    }
+
     user.set(updatedData);
     await user.save();
 
@@ -151,7 +168,7 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -201,7 +218,7 @@ const updateUserPasswordById = async (
     if (error.name === "ValidationError") {
       return res.status(400).json({ message: "Bad request" });
     }
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

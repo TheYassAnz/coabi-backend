@@ -21,40 +21,6 @@ interface QueryParamsRefunds {
   accommodationId?: mongoose.Types.ObjectId;
 }
 
-const checkRefundAccess = async (
-  refund: any,
-  role: Role,
-  userAccommodationId: string | null | undefined,
-): Promise<boolean> => {
-  if (testEnv || role === "admin") {
-    return true;
-  }
-
-  if (!userAccommodationId) {
-    return false;
-  }
-
-  const refundOwner = await User.findById(refund.userId);
-
-  if (!refundOwner) {
-    return false;
-  }
-
-  if (
-    (refundOwner.accommodationId &&
-      !hasAccessToAccommodation(
-        role,
-        userAccommodationId,
-        refundOwner.accommodationId.toString(),
-      )) ||
-    !!refundOwner.accommodationId
-  ) {
-    return false;
-  }
-
-  return true;
-};
-
 const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
     const { role, accommodationId: userAccommodationId } = req;
@@ -86,10 +52,17 @@ const createRefund = async (
   toRefund: number,
   userId: string,
   roommateId: string,
+  accommodationId: string,
   res: Response,
 ): Promise<any> => {
   try {
-    const newRefund = new Refund({ title, toRefund, userId, roommateId });
+    const newRefund = new Refund({
+      title,
+      toRefund,
+      userId,
+      roommateId,
+      accommodationId,
+    });
 
     await newRefund.save();
 
@@ -104,7 +77,7 @@ const createRefund = async (
 
 const createRefunds = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { title, toSplit, userId, roommateIds } = req.body; // roommateIds is a string[]
+    const { title, toSplit, userId, roommateIds, accommodationId } = req.body; // roommateIds is a string[]
     const {
       role,
       accommodationId: userAccommodationId,
@@ -139,7 +112,14 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
 
     const newRefunds = await Promise.all(
       roommateIds.map(async (roommateId: string) => {
-        return await createRefund(title, toRefund, userId, roommateId, res);
+        return await createRefund(
+          title,
+          toRefund,
+          userId,
+          roommateId,
+          accommodationId,
+          res,
+        );
       }),
     );
 
@@ -167,7 +147,13 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    if (!(await checkRefundAccess(refund, role, userAccommodationId))) {
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        refund.accommodationId.toString(),
+      )
+    ) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -181,7 +167,7 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const updateData = req.body;
     const { id } = req.params;
-    const { role, accommodationId: userAccommodationId } = req;
+    const { userId, role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -199,7 +185,17 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    if (!(await checkRefundAccess(refund, role, userAccommodationId))) {
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        refund.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    if (!testEnv && role !== "admin" && userId !== refund.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -220,7 +216,7 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
 const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const { role, accommodationId: userAccommodationId } = req;
+    const { userId, role, accommodationId: userAccommodationId } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Bad request" });
@@ -232,7 +228,17 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    if (!(await checkRefundAccess(refund, role, userAccommodationId))) {
+    if (
+      !hasAccessToAccommodation(
+        role,
+        userAccommodationId,
+        refund.accommodationId.toString(),
+      )
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    if (!testEnv && role !== "admin" && userId !== refund.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
