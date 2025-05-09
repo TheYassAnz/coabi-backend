@@ -18,7 +18,7 @@ const getAllAccommodations = async (
     if (!testEnv && role !== "admin") {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
-    const accommodations = await Accommodation.find();
+    const accommodations = await Accommodation.find().select("-code");
     return res.status(200).json(accommodations);
   } catch (error: any) {
     return res.status(500).json({
@@ -66,19 +66,20 @@ const createAccommodation = async (
       await user.save();
     }
 
-    return res.status(201).json(newAccommodation);
+    const { code: accommodationCode, ...accommodationWithoutCode } =
+      newAccommodation.toObject();
+
+    return res.status(201).json(accommodationWithoutCode);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res
         .status(400)
         .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -109,14 +110,15 @@ const getAccommodationById = async (
         .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
     }
 
-    return res.status(200).json(accommodation);
+    const { code: accommodationCode, ...accommodationWithoutCode } =
+      accommodation.toObject();
+
+    return res.status(200).json(accommodationWithoutCode);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -151,19 +153,21 @@ const updateAccommodationById = async (
         .status(404)
         .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
     }
-    return res.status(200).json(accommodation);
+
+    const { code: accommodationCode, ...accommodationWithoutCode } =
+      accommodation.toObject();
+
+    return res.status(200).json(accommodationWithoutCode);
   } catch (error: any) {
     if (error.name === "ValidationError") {
       return res
         .status(400)
         .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -198,12 +202,10 @@ const deleteAccommodationById = async (
 
     return res.sendStatus(204);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 

@@ -7,8 +7,9 @@ const router = express.Router();
 router.get("/", authMiddleware, userCtrl.getAllUsers);
 router.get("/filter", authMiddleware, userCtrl.filterUsers);
 router.get("/:id", authMiddleware, userCtrl.getUserById);
+router.patch("/:id/join", authMiddleware, userCtrl.joinAccommodationByCode);
 router.patch("/:id", authMiddleware, userCtrl.updateUserById);
-router.patch("/password/:id", authMiddleware, userCtrl.updateUserPasswordById);
+router.patch("/:id/password", authMiddleware, userCtrl.updateUserPasswordById);
 router.delete("/:id", authMiddleware, userCtrl.deleteUserById);
 
 export default router;

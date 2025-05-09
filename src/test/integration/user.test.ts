@@ -70,14 +70,14 @@ describe("User API Integration Tests", () => {
     expect(response.body).toHaveProperty("firstName", "Jojo");
   });
 
-  test("PATCH /users/password/:id should update a user password by ID", async () => {
+  test("PATCH /users/:id/password should update a user password by ID", async () => {
     const updatedData = {
       currentPassword: "password1234",
       newPassword: "password12345",
     };
 
     const response = await request(app)
-      .patch(`/api/users/password/${userId}`)
+      .patch(`/api/users/${userId}/password`)
       .send(updatedData)
       .expect(200);
 
