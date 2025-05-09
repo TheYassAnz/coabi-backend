@@ -13,7 +13,6 @@ describe("Accommodation API Integration Tests", () => {
   test("POST /accommodations should create a new accommodation", async () => {
     const accommodationData = {
       name: "Test Accommodation",
-      code: "123456789TTT",
       location: "Test Location",
       postalCode: 12345,
       country: "Test Country",

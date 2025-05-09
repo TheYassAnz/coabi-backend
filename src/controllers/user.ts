@@ -40,12 +40,10 @@ const getAllUsers = async (req: Request, res: Response): Promise<any> => {
     const users = await User.find(params).select("-password");
     return res.json(users);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -88,12 +86,73 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
 
     return res.status(200).json(user);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
+  }
+};
+
+const joinAccommodationByCode = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const userId = req.params.id;
+    const { code } = req.body;
+    const { role } = req;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
+    }
+
+    if (!code) {
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
+    }
+
+    const accommodation = await Accommodation.findOne({ code });
+
+    if (!accommodation) {
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", code: "USER_NOT_FOUND" });
+    }
+
+    if (role !== "admin" && user.accommodationId) {
+      return res
+        .status(400)
+        .json({
+          message: "User already belongs to an accommodation",
+          code: "USER_ALREADY_BELONGS",
+        });
+    }
+
+    user.accommodationId = accommodation._id;
+    await user.save();
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
+    return res.status(200).json(userWithoutPassword);
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
+    }
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -182,12 +241,10 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
     if (accommodationId) {
       const accommodation = await Accommodation.findById(accommodationId);
       if (!accommodation) {
-        return res
-          .status(404)
-          .json({
-            message: "Accommodation not found",
-            code: "ACCOMMODATION_NOT_FOUND",
-          });
+        return res.status(404).json({
+          message: "Accommodation not found",
+          code: "ACCOMMODATION_NOT_FOUND",
+        });
       }
     }
 
@@ -203,12 +260,10 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
         .status(400)
         .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -241,21 +296,17 @@ const updateUserPasswordById = async (
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({
-          message: "Current password is incorrect",
-          code: "INCORRECT_PASSWORD",
-        });
+      return res.status(400).json({
+        message: "Current password is incorrect",
+        code: "INCORRECT_PASSWORD",
+      });
     }
 
     if (!newPassword) {
-      return res
-        .status(400)
-        .json({
-          message: "New password is required",
-          code: "PASSWORD_REQUIRED",
-        });
+      return res.status(400).json({
+        message: "New password is required",
+        code: "PASSWORD_REQUIRED",
+      });
     }
 
     if (!validPasswordLength(newPassword)) {
@@ -275,12 +326,10 @@ const updateUserPasswordById = async (
         .status(400)
         .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -303,12 +352,10 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
 
     return res.sendStatus(204);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -356,6 +403,7 @@ const filterUsers = async (req: Request, res: Response): Promise<any> => {
 export default {
   getAllUsers,
   getUserById,
+  joinAccommodationByCode,
   updateUserById,
   updateUserPasswordById,
   deleteUserById,
