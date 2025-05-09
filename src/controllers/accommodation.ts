@@ -16,13 +16,14 @@ const getAllAccommodations = async (
   try {
     const role = req.role;
     if (!testEnv && role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
     const accommodations = await Accommodation.find();
     return res.status(200).json(accommodations);
   } catch (error: any) {
     return res.status(500).json({
       message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR ",
     });
   }
 };
@@ -56,7 +57,9 @@ const createAccommodation = async (
     if (!testEnv) {
       const user = await User.findById(userId);
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(404)
+          .json({ message: "User not found", code: "USER_NOT_FOUND" });
       }
       user.accommodationId = newAccommodation._id;
       user.role = "moderator";
@@ -66,9 +69,16 @@ const createAccommodation = async (
     return res.status(201).json(newAccommodation);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
   }
 };
 
@@ -82,22 +92,31 @@ const getAccommodationById = async (
     const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     if (!hasAccessToAccommodation(role, userAccommodationId, id)) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     const accommodation = await Accommodation.findById(id);
 
     if (!accommodation) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
     }
 
     return res.status(200).json(accommodation);
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
   }
 };
 
@@ -112,11 +131,13 @@ const updateAccommodationById = async (
     const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     if (!canModifyAccommodation(role, userAccommodationId, id)) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     const accommodation = await Accommodation.findByIdAndUpdate(
@@ -126,14 +147,23 @@ const updateAccommodationById = async (
     );
 
     if (!accommodation) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
     }
     return res.status(200).json(accommodation);
   } catch (error: any) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
   }
 };
 
@@ -147,24 +177,33 @@ const deleteAccommodationById = async (
     const userAccommodationId = req.accommodationId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Bad request" });
+      return res
+        .status(400)
+        .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
 
     const accommodation = await Accommodation.findById(id);
 
     if (!accommodation) {
-      return res.status(404).json({ message: "Not found" });
+      return res
+        .status(404)
+        .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
     }
 
     if (!canModifyAccommodation(role, userAccommodationId, id)) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     await accommodation.deleteOne();
 
     return res.sendStatus(204);
   } catch (error: any) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
   }
 };
 

@@ -16,6 +16,7 @@ describe("Refund API Integration Tests", () => {
       toSplit: 200,
       userId: "67ecf50fe1ec65f57a487989",
       roommateIds: ["67e922f5f031d41cd1da4fe4"],
+      accommodationId: "67e922f5f031d41cd1da4fe4",
     };
 
     const response = await request(app)
