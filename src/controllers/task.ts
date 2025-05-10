@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
+import { authorizedToModify } from "../utils/auth/user";
 
 interface QueryParamsTasks {
   name?: {
@@ -80,12 +81,6 @@ const getTaskById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
     const { role, accommodationId: userAccommodationId } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     const task = await Task.findById(id);
 
     if (!task) {
@@ -117,13 +112,7 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const updateData = req.body;
     const { id } = req.params;
-    const { role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
+    const { userId, role, accommodationId: userAccommodationId } = req;
 
     const task = await Task.findById(id);
 
@@ -138,7 +127,9 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
         role,
         userAccommodationId,
         task.accommodationId.toString(),
-      )
+      ) ||
+      !authorizedToModify(role, task.userId.toString(), userId) ||
+      updateData.accommodationId
     ) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
@@ -163,13 +154,7 @@ const updateTaskById = async (req: Request, res: Response): Promise<any> => {
 const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const { role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
+    const { userId, role, accommodationId: userAccommodationId } = req;
 
     const task = await Task.findById(id);
 
@@ -184,7 +169,8 @@ const deleteTaskById = async (req: Request, res: Response): Promise<any> => {
         role,
         userAccommodationId,
         task.accommodationId.toString(),
-      )
+      ) ||
+      !authorizedToModify(role, task.userId.toString(), userId)
     ) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }

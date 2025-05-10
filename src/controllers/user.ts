@@ -7,6 +7,7 @@ import { testEnv } from "../utils/env";
 import { Role } from "../types/role";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import Accommodation from "../models/accommodation";
+import { authorizedToModify } from "../utils/auth/user";
 
 interface QueryParamsUsers {
   $or?: {
@@ -52,12 +53,6 @@ const getUserById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
     const { accommodationId: userAccommodationId, role } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     if (!testEnv && role !== "admin" && id !== req.userId) {
       if (role === "user") {
         return res
@@ -102,12 +97,6 @@ const joinAccommodationByCode = async (
     const { code } = req.body;
     const { role } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     if (!code) {
       return res
         .status(400)
@@ -131,12 +120,10 @@ const joinAccommodationByCode = async (
     }
 
     if (role !== "admin" && user.accommodationId) {
-      return res
-        .status(400)
-        .json({
-          message: "User already belongs to an accommodation",
-          code: "USER_ALREADY_BELONGS",
-        });
+      return res.status(400).json({
+        message: "User already belongs to an accommodation",
+        code: "USER_ALREADY_BELONGS",
+      });
     }
 
     user.accommodationId = accommodation._id;
@@ -165,18 +152,12 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
       accommodationId: userAccommodationId,
     } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
+    let updatedData = req.body;
+    const { username, email, role } = updatedData;
 
     if (!testEnv && userRole === "user" && userId !== id) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
-
-    let updatedData = req.body;
-    const { username, email, role } = updatedData;
 
     if (username) {
       const existingUsername = await User.findOne({ username });
@@ -213,17 +194,29 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
         .json({ message: "Not found", code: "USER_NOT_FOUND" });
     }
 
-    if (!testEnv && user.role === "user" && role === "moderator") {
+    if (!testEnv && !user.accommodationId) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
-    if (!testEnv && userRole === "moderator") {
-      if (!user.accommodationId) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+    if (
+      !testEnv &&
+      userId !== user._id.toString() &&
+      userRole === "moderator"
+    ) {
+      const allowedFields = ["role", "accommodationId"];
+      const attemptedFields = Object.keys(updatedData);
+      const unauthorizedFields = attemptedFields.filter(
+        (field) => !allowedFields.includes(field),
+      );
+
+      if (unauthorizedFields.length > 0) {
+        return res.status(403).json({
+          message: "Moderators can only update role and accommodationId",
+          code: "FORBIDDEN",
+        });
       }
       if (
+        user.accommodationId &&
         !hasAccessToAccommodation(
           userRole,
           userAccommodationId,
@@ -233,18 +226,6 @@ const updateUserById = async (req: Request, res: Response): Promise<any> => {
         return res
           .status(403)
           .json({ message: "Forbidden", code: "FORBIDDEN" });
-      }
-    }
-
-    const accommodationId = updatedData.accommodationId;
-
-    if (accommodationId) {
-      const accommodation = await Accommodation.findById(accommodationId);
-      if (!accommodation) {
-        return res.status(404).json({
-          message: "Accommodation not found",
-          code: "ACCOMMODATION_NOT_FOUND",
-        });
       }
     }
 
@@ -276,13 +257,7 @@ const updateUserPasswordById = async (
     const { userId, role } = req;
     const { currentPassword, newPassword } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
-    if (!testEnv && role !== "admin" && userId !== id) {
+    if (!authorizedToModify(role, id, userId)) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
@@ -315,6 +290,7 @@ const updateUserPasswordById = async (
         code: "PASSWORD_LENGTH",
       });
     }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
@@ -337,12 +313,6 @@ const deleteUserById = async (req: Request, res: Response): Promise<any> => {
   try {
     const id = req.params.id;
     const { userId, role } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     if (!testEnv && role !== "admin" && userId !== id) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });

@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
+import { authorizedToModify } from "../utils/auth/user";
 
 interface QueryParamsEvents {
   title?: {
@@ -92,12 +93,6 @@ const getEventById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
     const { role, accommodationId: userAccommodationId } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     const event = await Event.findById(id);
 
     if (!event) {
@@ -129,13 +124,7 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const updateData = req.body;
     const { id } = req.params;
-    const { role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
+    const { userId, role, accommodationId: userAccommodationId } = req;
 
     const event = await Event.findById(id);
 
@@ -150,7 +139,10 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
         role,
         userAccommodationId,
         event.accommodationId.toString(),
-      )
+      ) ||
+      !authorizedToModify(role, event.userId.toString(), userId) ||
+      updateData.accommodationId ||
+      updateData.userId
     ) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
@@ -175,13 +167,7 @@ const updateEventById = async (req: Request, res: Response): Promise<any> => {
 const deleteEventById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const { role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
+    const { userId, role, accommodationId: userAccommodationId } = req;
 
     const event = await Event.findById(id);
 
@@ -196,7 +182,8 @@ const deleteEventById = async (req: Request, res: Response): Promise<any> => {
         role,
         userAccommodationId,
         event.accommodationId.toString(),
-      )
+      ) ||
+      !authorizedToModify(role, event.userId.toString(), userId)
     ) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }

@@ -1,7 +1,10 @@
 import Rule from "../models/rule";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { hasAccessToAccommodation } from "../utils/auth/accommodation";
+import {
+  canModifyAccommodation,
+  hasAccessToAccommodation,
+} from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
 
 const getAllRules = async (req: Request, res: Response): Promise<any> => {
@@ -38,7 +41,10 @@ const createRule = async (req: Request, res: Response): Promise<any> => {
     const { title, description, accommodationId } = req.body;
     const { role, accommodationId: userAccommodationId } = req;
 
-    if (!hasAccessToAccommodation(role, userAccommodationId, accommodationId)) {
+    if (
+      !canModifyAccommodation(role, userAccommodationId, accommodationId) ||
+      role === "user"
+    ) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
@@ -67,12 +73,6 @@ const getRuleById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     const { role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     const rule = await Rule.findById(id);
 
@@ -107,12 +107,6 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
     const updateData = req.body;
     const { role, accommodationId: userAccommodationId } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     const rule = await Rule.findById(id);
 
     if (!rule) {
@@ -122,11 +116,12 @@ const updateRuleById = async (req: Request, res: Response): Promise<any> => {
     }
 
     if (
-      !hasAccessToAccommodation(
+      !canModifyAccommodation(
         role,
         userAccommodationId,
         rule.accommodationId.toString(),
-      )
+      ) ||
+      updateData.accommodationId
     ) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
@@ -153,12 +148,6 @@ const deleteRuleById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
     const { role, accommodationId: userAccommodationId } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     const rule = await Rule.findById(id);
 
     if (!rule) {
@@ -168,7 +157,7 @@ const deleteRuleById = async (req: Request, res: Response): Promise<any> => {
     }
 
     if (
-      !hasAccessToAccommodation(
+      !canModifyAccommodation(
         role,
         userAccommodationId,
         rule.accommodationId.toString(),

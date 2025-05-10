@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import { split } from "../utils/utils";
 import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
-import { Role } from "../types/role";
+import { authorizedToModify } from "../utils/auth/user";
 
 interface QueryParamsRefunds {
   title?: {
@@ -43,12 +43,10 @@ const getAllRefunds = async (req: Request, res: Response): Promise<any> => {
     const refunds = await Refund.find(params);
     return res.json(refunds);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -78,12 +76,10 @@ const createRefund = async (
         .status(400)
         .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -148,12 +144,10 @@ const createRefunds = async (req: Request, res: Response): Promise<any> => {
         .status(400)
         .json({ message: "Bad request", code: "BAD_REQUEST" });
     }
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -161,12 +155,6 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
     const { role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     const refund = await Refund.findById(id);
 
@@ -188,12 +176,10 @@ const getRefundById = async (req: Request, res: Response): Promise<any> => {
 
     return res.status(200).json(refund);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 
@@ -202,20 +188,6 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
     const updateData = req.body;
     const { id } = req.params;
     const { userId, role, accommodationId: userAccommodationId } = req;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
-    const toRefund = req.body.toRefund;
-
-    if (toRefund && toRefund < 0) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     const refund = await Refund.findById(id);
 
@@ -230,12 +202,12 @@ const updateRefundById = async (req: Request, res: Response): Promise<any> => {
         role,
         userAccommodationId,
         refund.accommodationId.toString(),
-      )
+      ) ||
+      !authorizedToModify(role, refund.userId.toString(), userId) ||
+      updateData.accommodationId ||
+      updateData.userId ||
+      updateData.roommateId
     ) {
-      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
-    }
-
-    if (!testEnv && role !== "admin" && userId !== refund.userId) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
@@ -261,12 +233,6 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
     const { userId, role, accommodationId: userAccommodationId } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     const refund = await Refund.findById(id);
 
     if (!refund) {
@@ -280,24 +246,19 @@ const deleteRefundById = async (req: Request, res: Response): Promise<any> => {
         role,
         userAccommodationId,
         refund.accommodationId.toString(),
-      )
+      ) ||
+      !authorizedToModify(role, refund.userId.toString(), userId)
     ) {
-      return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
-    }
-
-    if (!testEnv && role !== "admin" && userId !== refund.userId) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
 
     await refund.deleteOne();
     return res.sendStatus(204);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    return res.status(500).json({
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
 

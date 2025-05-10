@@ -94,12 +94,6 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     const file = await FileModel.findById(id);
 
     if (!file) {
@@ -121,12 +115,6 @@ const getFileById = async (req: Request, res: Response): Promise<any> => {
 const deleteFileById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     const file = await FileModel.findById(id);
 

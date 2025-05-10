@@ -1,7 +1,6 @@
 import Accommodation from "../models/accommodation";
 import User from "../models/user";
 import { Request, Response } from "express";
-import mongoose from "mongoose";
 import { generateRandomCode } from "../utils/utils";
 import {
   hasAccessToAccommodation,
@@ -92,12 +91,6 @@ const getAccommodationById = async (
     const role = req.role;
     const userAccommodationId = req.accommodationId;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
-
     if (!hasAccessToAccommodation(role, userAccommodationId, id)) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
     }
@@ -131,12 +124,6 @@ const updateAccommodationById = async (
     const { id } = req.params;
     const role = req.role;
     const userAccommodationId = req.accommodationId;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     if (!canModifyAccommodation(role, userAccommodationId, id)) {
       return res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
@@ -179,12 +166,6 @@ const deleteAccommodationById = async (
     const id = req.params.id;
     const role = req.role;
     const userAccommodationId = req.accommodationId;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", code: "BAD_REQUEST" });
-    }
 
     const accommodation = await Accommodation.findById(id);
 
