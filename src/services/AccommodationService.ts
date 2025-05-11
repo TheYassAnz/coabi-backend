@@ -1,0 +1,188 @@
+import Accommodation from "../models/accommodation";
+import User from "../models/user";
+import { Request, Response } from "express";
+import { generateRandomCode } from "../utils/utils";
+import {
+  hasAccessToAccommodation,
+  canModifyAccommodation,
+} from "../utils/auth/accommodation";
+import { testEnv } from "../utils/env";
+
+class AccommodationService {
+  async getAllAccommodations(req: Request, res: Response): Promise<any> {
+    try {
+      const role = req.role;
+      if (!testEnv && role !== "admin") {
+        return res
+          .status(403)
+          .json({ message: "Forbidden", code: "FORBIDDEN" });
+      }
+      const accommodations = await Accommodation.find().select("-code");
+      return res.status(200).json(accommodations);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR ",
+      });
+    }
+  }
+
+  async createAccommodation(req: Request, res: Response): Promise<any> {
+    try {
+      const { name, location, postalCode, country } = req.body;
+      const userId = req.userId;
+
+      let code: string;
+      let existCode: boolean;
+
+      do {
+        code = generateRandomCode();
+        existCode = !!(await Accommodation.findOne({ code }));
+      } while (existCode);
+
+      const newAccommodation = new Accommodation({
+        name,
+        code,
+        location,
+        postalCode,
+        country,
+      });
+
+      await newAccommodation.save();
+
+      if (!testEnv) {
+        const user = await User.findById(userId);
+        if (!user) {
+          return res
+            .status(404)
+            .json({ message: "User not found", code: "USER_NOT_FOUND" });
+        }
+        user.accommodationId = newAccommodation._id;
+        user.role = "moderator";
+        await user.save();
+      }
+
+      const { code: accommodationCode, ...accommodationWithoutCode } =
+        newAccommodation.toObject();
+
+      return res.status(201).json(accommodationWithoutCode);
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        return res
+          .status(400)
+          .json({ message: "Bad request", code: "BAD_REQUEST" });
+      }
+      return res.status(500).json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  }
+
+  async getAccommodationById(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const role = req.role;
+      const userAccommodationId = req.accommodationId;
+
+      if (!hasAccessToAccommodation(role, userAccommodationId, id)) {
+        return res
+          .status(403)
+          .json({ message: "Forbidden", code: "FORBIDDEN" });
+      }
+
+      const accommodation = await Accommodation.findById(id);
+
+      if (!accommodation) {
+        return res
+          .status(404)
+          .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
+      }
+
+      const { code: accommodationCode, ...accommodationWithoutCode } =
+        accommodation.toObject();
+
+      return res.status(200).json(accommodationWithoutCode);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  }
+
+  async updateAccommodationById(req: Request, res: Response): Promise<any> {
+    try {
+      const updateData = req.body;
+      const { id } = req.params;
+      const role = req.role;
+      const userAccommodationId = req.accommodationId;
+
+      if (!canModifyAccommodation(role, userAccommodationId, id)) {
+        return res
+          .status(403)
+          .json({ message: "Forbidden", code: "FORBIDDEN" });
+      }
+
+      const accommodation = await Accommodation.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true },
+      );
+
+      if (!accommodation) {
+        return res
+          .status(404)
+          .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
+      }
+
+      const { code: accommodationCode, ...accommodationWithoutCode } =
+        accommodation.toObject();
+
+      return res.status(200).json(accommodationWithoutCode);
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        return res
+          .status(400)
+          .json({ message: "Bad request", code: "BAD_REQUEST" });
+      }
+      return res.status(500).json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  }
+
+  async deleteAccommodationById(req: Request, res: Response): Promise<any> {
+    try {
+      const id = req.params.id;
+      const role = req.role;
+      const userAccommodationId = req.accommodationId;
+
+      const accommodation = await Accommodation.findById(id);
+
+      if (!accommodation) {
+        return res
+          .status(404)
+          .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
+      }
+
+      if (!canModifyAccommodation(role, userAccommodationId, id)) {
+        return res
+          .status(403)
+          .json({ message: "Forbidden", code: "FORBIDDEN" });
+      }
+
+      await accommodation.deleteOne();
+
+      return res.sendStatus(204);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  }
+}
+
+export default AccommodationService;
