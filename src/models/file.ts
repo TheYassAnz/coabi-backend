@@ -12,11 +12,13 @@ interface File extends Document {
   type: FileTypes;
   size: number;
   userId: Types.ObjectId;
+  accommodationId: Types.ObjectId;
 }
 
 const fileSchema = new Schema<File>(
   {
     _id: { type: String, required: true, maxlength: 50 },
+    name: { type: String, required: true, maxlength: 50 },
     description: {
       type: String,
       required: false,
@@ -26,6 +28,11 @@ const fileSchema = new Schema<File>(
     type: { type: String, enum: Object.values(FileTypes), required: true },
     size: { type: Number, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      required: true,
+    },
   },
   { timestamps: true },
 );
