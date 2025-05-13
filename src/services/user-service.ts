@@ -5,9 +5,9 @@ import mongoose from "mongoose";
 import { validPasswordLength } from "../utils/utils";
 import { testEnv } from "../utils/env";
 import { Role } from "../types/role";
-import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import Accommodation from "../models/accommodation";
-import { authorizedToModify } from "../utils/auth/user";
+import { UserBusiness } from "./business/user-business";
+import { AccommodationBusiness } from "./business/accommodation-business";
 
 interface QueryParamsUsers {
   $or?: {
@@ -20,15 +20,14 @@ interface QueryParamsUsers {
 }
 
 class UserService {
-  async getAllUsers(req: Request, res: Response): Promise<any> {
+  async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
       const { role, accommodationId: userAccommodationId } = req;
       const { adminUI } = req.query;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       let params: any = {};
@@ -42,34 +41,34 @@ class UserService {
       }
 
       const users = await User.find(params).select("-password");
-      return res.json(users);
+      res.json(users);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async getUserById(req: Request, res: Response): Promise<any> {
+  async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { accommodationId: userAccommodationId, role } = req;
 
       if (!testEnv && role !== "admin" && id !== req.userId) {
         if (role === "user") {
-          return res
-            .status(403)
-            .json({ message: "Forbidden", code: "FORBIDDEN" });
+          res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+          return;
         }
       }
 
       const user = await User.findById(id).select("-password");
 
       if (!user) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "USER_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "USER_NOT_FOUND" });
+        return;
       }
 
       if (
@@ -79,74 +78,78 @@ class UserService {
         (!userAccommodationId ||
           user.accommodationId.toString() !== userAccommodationId.toString())
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
-      return res.status(200).json(user);
+      res.status(200).json(user);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async joinAccommodationByCode(req: Request, res: Response): Promise<any> {
+  async joinAccommodationByCode(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.params.id;
       const { code } = req.body;
       const { role } = req;
 
       if (!code) {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
 
       const accommodation = await Accommodation.findOne({ code });
 
       if (!accommodation) {
-        return res
+        res
           .status(404)
           .json({ message: "Not found", code: "ACCOMMODATION_NOT_FOUND" });
+        return;
       }
 
       const user = await User.findById(userId);
 
       if (!user) {
-        return res
+        res
           .status(404)
           .json({ message: "User not found", code: "USER_NOT_FOUND" });
+        return;
       }
 
       if (role !== "admin" && user.accommodationId) {
-        return res.status(400).json({
+        res.status(400).json({
           message: "User already belongs to an accommodation",
           code: "USER_ALREADY_BELONGS",
         });
+        return;
       }
 
       user.accommodationId = accommodation._id;
       await user.save();
       const { password: userPassword, ...userWithoutPassword } =
         user.toObject();
-      return res.status(200).json(userWithoutPassword);
+      res.status(200).json(userWithoutPassword);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async updateUserById(req: Request, res: Response): Promise<any> {
+  async updateUserById(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id;
       const {
@@ -159,57 +162,58 @@ class UserService {
       const { username, email, role } = updatedData;
 
       if (!testEnv && userRole === "user" && userId !== id) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       if (username) {
         const existingUsername = await User.findOne({ username });
         if (existingUsername && existingUsername._id.toString() !== id) {
-          return res.status(409).json({
+          res.status(409).json({
             message: "Username already taken",
             code: "USERNAME_TAKEN",
           });
+          return;
         }
       }
 
       if (email) {
         const existingEmail = await User.findOne({ email });
         if (existingEmail && existingEmail._id.toString() !== id) {
-          return res
+          res
             .status(409)
             .json({ message: "Email already taken", code: "EMAIL_TAKEN" });
+          return;
         }
       }
 
       if (role) {
         const possibleRoles = ["user", "moderator"];
         if (!possibleRoles.includes(role)) {
-          return res
-            .status(400)
-            .json({ message: "Bad request", code: "BAD_REQUEST" });
+          res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+          return;
         }
       }
 
       const user = await User.findById(id);
 
       if (!user) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "USER_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "USER_NOT_FOUND" });
+        return;
       }
 
       if (!testEnv && !user.accommodationId) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       if (
-        !testEnv &&
-        userId !== user._id.toString() &&
-        userRole === "moderator"
+        !UserBusiness.moderatorCheckNotNeeded(
+          testEnv,
+          userRole,
+          user._id.toString(),
+          userId,
+        )
       ) {
         const allowedFields = ["role", "accommodationId"];
         const attemptedFields = Object.keys(updatedData);
@@ -218,22 +222,23 @@ class UserService {
         );
 
         if (unauthorizedFields.length > 0) {
-          return res.status(403).json({
+          res.status(403).json({
             message: "Moderators can only update role and accommodationId",
             code: "FORBIDDEN",
           });
+          return;
         }
         if (
           user.accommodationId &&
-          !hasAccessToAccommodation(
+          !AccommodationBusiness.hasAccess(
+            testEnv,
             userRole,
             userAccommodationId,
             user.accommodationId.toString(),
           )
         ) {
-          return res
-            .status(403)
-            .json({ message: "Forbidden", code: "FORBIDDEN" });
+          res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+          return;
         }
       }
 
@@ -243,60 +248,62 @@ class UserService {
       const { password: userPassword, ...userWithoutPassword } =
         user.toObject();
 
-      return res.status(200).json(userWithoutPassword);
+      res.status(200).json(userWithoutPassword);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async updateUserPasswordById(req: Request, res: Response): Promise<any> {
+  async updateUserPasswordById(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id;
       const { userId, role } = req;
       const { currentPassword, newPassword } = req.body;
 
-      if (!authorizedToModify(role, id, userId)) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+      if (!UserBusiness.canModifyObject(testEnv, role, id, userId)) {
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const user = await User.findById(id);
 
       if (!user) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "USER_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "USER_NOT_FOUND" });
+        return;
       }
 
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
-        return res.status(400).json({
+        res.status(400).json({
           message: "Current password is incorrect",
           code: "INCORRECT_PASSWORD",
         });
+        return;
       }
 
       if (!newPassword) {
-        return res.status(400).json({
+        res.status(400).json({
           message: "New password is required",
           code: "PASSWORD_REQUIRED",
         });
+        return;
       }
 
       if (!validPasswordLength(newPassword)) {
-        return res.status(400).json({
+        res.status(400).json({
           message: "Password must be between 8 and 72 characters.",
           code: "PASSWORD_LENGTH",
         });
+        return;
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -304,52 +311,53 @@ class UserService {
       await user.save();
       const { password: userPassword, ...userWithoutPassword } =
         user.toObject();
-      return res.status(200).json(userWithoutPassword);
+      res.status(200).json(userWithoutPassword);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async deleteUserById(req: Request, res: Response): Promise<any> {
+  async deleteUserById(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id;
       const { userId, role } = req;
 
-      if (!testEnv && role !== "admin" && userId !== id) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+      if (!UserBusiness.canModifyObject(testEnv, role, id, userId)) {
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       await User.findByIdAndDelete(id);
 
-      return res.sendStatus(204);
+      res.sendStatus(204);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async filterUsers(req: Request, res: Response): Promise<any> {
+  async filterUsers(req: Request, res: Response): Promise<void> {
     try {
       const { name, role } = req.query;
       const { role: userRole, accommodationId: userAccommodationId } = req;
       const possibleRoles = ["user", "moderator", "admin"];
 
       if (!testEnv && !userAccommodationId && userRole !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const params: QueryParamsUsers = {};
@@ -376,12 +384,14 @@ class UserService {
       }
 
       const users = await User.find(params).select("-password");
-      return res.status(200).json(users);
+      res.status(200).json(users);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 }

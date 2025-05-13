@@ -54,12 +54,11 @@ class FileService {
     },
   });
 
-  async uploadFile(req: Request, res: Response): Promise<any> {
+  async uploadFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.file) {
-        return res
-          .status(400)
-          .json({ message: "No file uploaded.", code: "NO_FILE" });
+        res.status(400).json({ message: "No file uploaded.", code: "NO_FILE" });
+        return;
       }
 
       const { description, userId, accommodationId } = req.body;
@@ -81,63 +80,66 @@ class FileService {
 
       await newFile.save();
       res.status(201).json(newFile);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
       res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async getFileById(req: Request, res: Response): Promise<any> {
+  async getFileById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const file = await FileModel.findById(id);
 
       if (!file) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "FILE_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "FILE_NOT_FOUND" });
+        return;
       }
 
       const filePath = path.join(__dirname, "../../uploads", file._id);
       res.sendFile(filePath);
+      return;
     } catch (error: any) {
       res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async deleteFileById(req: Request, res: Response): Promise<any> {
+  async deleteFileById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const file = await FileModel.findById(id);
 
       if (!file) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "FILE_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "FILE_NOT_FOUND" });
+        return;
       }
 
       const filePath = path.join(__dirname, "../../uploads", file._id);
       fs.unlinkSync(filePath);
       await file.deleteOne();
 
-      return res.sendStatus(204);
+      res.sendStatus(204);
+      return;
     } catch (error: any) {
       res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 }

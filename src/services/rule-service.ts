@@ -1,22 +1,18 @@
 import Rule from "../models/rule";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import {
-  canModifyAccommodation,
-  hasAccessToAccommodation,
-} from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
+import { AccommodationBusiness } from "./business/accommodation-business";
 
 class RuleService {
-  async getAllRules(req: Request, res: Response): Promise<any> {
+  async getAllRules(req: Request, res: Response): Promise<void> {
     try {
       const { role, accommodationId: userAccommodationId } = req;
       const { adminUI } = req.query;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       let params: any = {};
@@ -30,27 +26,33 @@ class RuleService {
       }
 
       const rules = await Rule.find(params);
-      return res.status(200).json(rules);
+      res.status(200).json(rules);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async createRule(req: Request, res: Response): Promise<any> {
+  async createRule(req: Request, res: Response): Promise<void> {
     try {
       const { title, description, accommodationId } = req.body;
       const { role, accommodationId: userAccommodationId } = req;
 
       if (
-        !canModifyAccommodation(role, userAccommodationId, accommodationId) ||
+        !AccommodationBusiness.canModify(
+          testEnv,
+          role,
+          userAccommodationId,
+          accommodationId,
+        ) ||
         role === "user"
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const newRule = new Rule({
@@ -60,21 +62,22 @@ class RuleService {
       });
 
       await newRule.save();
-      return res.status(201).json(newRule);
+      res.status(201).json(newRule);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async getRuleById(req: Request, res: Response): Promise<any> {
+  async getRuleById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, accommodationId: userAccommodationId } = req;
@@ -82,33 +85,34 @@ class RuleService {
       const rule = await Rule.findById(id);
 
       if (!rule) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "RULE_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "RULE_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           rule.accommodationId.toString(),
         )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
-      return res.status(200).json(rule);
+      res.status(200).json(rule);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async updateRuleById(req: Request, res: Response): Promise<any> {
+  async updateRuleById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -117,42 +121,42 @@ class RuleService {
       const rule = await Rule.findById(id);
 
       if (!rule) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "RULE_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "RULE_NOT_FOUND" });
+        return;
       }
 
       if (
-        !canModifyAccommodation(
+        !AccommodationBusiness.canModify(
+          testEnv,
           role,
           userAccommodationId,
           rule.accommodationId.toString(),
         ) ||
         updateData.accommodationId
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       rule.set(updateData);
       await rule.save();
 
-      return res.status(200).json(rule);
+      res.status(200).json(rule);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async deleteRuleById(req: Request, res: Response): Promise<any> {
+  async deleteRuleById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, accommodationId: userAccommodationId } = req;
@@ -160,31 +164,32 @@ class RuleService {
       const rule = await Rule.findById(id);
 
       if (!rule) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "RULE_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "RULE_NOT_FOUND" });
+        return;
       }
 
       if (
-        !canModifyAccommodation(
+        !AccommodationBusiness.canModify(
+          testEnv,
           role,
           userAccommodationId,
           rule.accommodationId.toString(),
         )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       await rule.deleteOne();
 
-      return res.sendStatus(204);
+      res.sendStatus(204);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 }

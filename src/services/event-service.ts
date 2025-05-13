@@ -1,9 +1,9 @@
 import Event from "../models/event";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
-import { authorizedToModify } from "../utils/auth/user";
+import { UserBusiness } from "./business/user-business";
+import { AccommodationBusiness } from "./business/accommodation-business";
 
 interface QueryParamsEvents {
   title?: {
@@ -20,15 +20,14 @@ interface QueryParamsEvents {
 }
 
 class EventService {
-  async getAllEvents(req: Request, res: Response): Promise<any> {
+  async getAllEvents(req: Request, res: Response): Promise<void> {
     try {
       const { role, accommodationId: userAccommodationId } = req;
       const { adminUI } = req.query;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       let params: any = {};
@@ -42,16 +41,18 @@ class EventService {
       }
 
       const events = await Event.find(params);
-      return res.status(200).json(events);
+      res.status(200).json(events);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async createEvent(req: Request, res: Response): Promise<any> {
+  async createEvent(req: Request, res: Response): Promise<void> {
     try {
       const {
         title,
@@ -64,11 +65,15 @@ class EventService {
       const { role, accommodationId: userAccommodationId } = req;
 
       if (
-        !hasAccessToAccommodation(role, userAccommodationId, accommodationId)
+        !AccommodationBusiness.hasAccess(
+          testEnv,
+          role,
+          userAccommodationId,
+          accommodationId,
+        )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const newEvent = new Event({
@@ -81,21 +86,22 @@ class EventService {
       });
 
       await newEvent.save();
-      return res.status(201).json(newEvent);
+      res.status(201).json(newEvent);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async getEventById(req: Request, res: Response): Promise<any> {
+  async getEventById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, accommodationId: userAccommodationId } = req;
@@ -103,33 +109,34 @@ class EventService {
       const event = await Event.findById(id);
 
       if (!event) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "EVENT_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "EVENT_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           event.accommodationId.toString(),
         )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
-      return res.status(200).json(event);
+      res.status(200).json(event);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async updateEventById(req: Request, res: Response): Promise<any> {
+  async updateEventById(req: Request, res: Response): Promise<void> {
     try {
       const updateData = req.body;
       const { id } = req.params;
@@ -138,44 +145,49 @@ class EventService {
       const event = await Event.findById(id);
 
       if (!event) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "EVENT_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "EVENT_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           event.accommodationId.toString(),
         ) ||
-        !authorizedToModify(role, event.userId.toString(), userId) ||
+        !UserBusiness.canModifyObject(
+          testEnv,
+          role,
+          event.userId.toString(),
+          userId,
+        ) ||
         updateData.accommodationId ||
         updateData.userId
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       event.set(updateData);
       await event.save();
 
-      return res.status(200).json(event);
+      res.status(200).json(event);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async deleteEventById(req: Request, res: Response): Promise<any> {
+  async deleteEventById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { userId, role, accommodationId: userAccommodationId } = req;
@@ -183,44 +195,49 @@ class EventService {
       const event = await Event.findById(id);
 
       if (!event) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "EVENT_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "EVENT_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           event.accommodationId.toString(),
         ) ||
-        !authorizedToModify(role, event.userId.toString(), userId)
+        !UserBusiness.canModifyObject(
+          testEnv,
+          role,
+          event.userId.toString(),
+          userId,
+        )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       await event.deleteOne();
 
-      return res.sendStatus(204);
+      res.sendStatus(204);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async filterEvents(req: Request, res: Response): Promise<any> {
+  async filterEvents(req: Request, res: Response): Promise<void> {
     try {
       const { title, plannedDateStart, plannedDateEnd, userId } = req.query;
       const { role, accommodationId: userAccommodationId } = req;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const params: QueryParamsEvents = {};
@@ -251,12 +268,14 @@ class EventService {
 
       const events = await Event.find(params);
 
-      return res.status(200).json(events);
+      res.status(200).json(events);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 }

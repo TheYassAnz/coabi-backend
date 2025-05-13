@@ -1,9 +1,9 @@
 import Task from "../models/task";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
-import { authorizedToModify } from "../utils/auth/user";
+import { UserBusiness } from "./business/user-business";
+import { AccommodationBusiness } from "./business/accommodation-business";
 
 interface QueryParamsTasks {
   name?: {
@@ -17,15 +17,14 @@ interface QueryParamsTasks {
 }
 
 class TaskService {
-  async getAllTasks(req: Request, res: Response): Promise<any> {
+  async getAllTasks(req: Request, res: Response): Promise<void> {
     try {
       const { role, accommodationId: userAccommodationId } = req;
       const { adminUI } = req.query;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       let params: any = {};
@@ -39,26 +38,32 @@ class TaskService {
       }
 
       const tasks = await Task.find(params);
-      return res.status(200).json(tasks);
+      res.status(200).json(tasks);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async createTask(req: Request, res: Response): Promise<any> {
+  async createTask(req: Request, res: Response): Promise<void> {
     try {
       const { name, description, userId, accommodationId } = req.body;
       const { role, accommodationId: userAccommodationId } = req;
 
       if (
-        !hasAccessToAccommodation(role, userAccommodationId, accommodationId)
+        !AccommodationBusiness.hasAccess(
+          testEnv,
+          role,
+          userAccommodationId,
+          accommodationId,
+        )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const newTask = new Task({
@@ -69,21 +74,22 @@ class TaskService {
       });
 
       await newTask.save();
-      return res.status(201).json(newTask);
+      res.status(201).json(newTask);
+      return;
     } catch (error: any) {
       if (error instanceof mongoose.Error.ValidationError) {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async getTaskById(req: Request, res: Response): Promise<any> {
+  async getTaskById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, accommodationId: userAccommodationId } = req;
@@ -91,33 +97,34 @@ class TaskService {
       const task = await Task.findById(id);
 
       if (!task) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "TASK_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "TASK_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           task.accommodationId.toString(),
         )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
-      return res.status(200).json(task);
+      res.status(200).json(task);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async updateTaskById(req: Request, res: Response): Promise<any> {
+  async updateTaskById(req: Request, res: Response): Promise<void> {
     try {
       const updateData = req.body;
       const { id } = req.params;
@@ -126,43 +133,48 @@ class TaskService {
       const task = await Task.findById(id);
 
       if (!task) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "TASK_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "TASK_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           task.accommodationId.toString(),
         ) ||
-        !authorizedToModify(role, task.userId.toString(), userId) ||
+        !UserBusiness.canModifyObject(
+          testEnv,
+          role,
+          task.userId.toString(),
+          userId,
+        ) ||
         updateData.accommodationId
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       task.set(updateData);
       await task.save();
 
-      return res.status(200).json(task);
+      res.status(200).json(task);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async deleteTaskById(req: Request, res: Response): Promise<any> {
+  async deleteTaskById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { userId, role, accommodationId: userAccommodationId } = req;
@@ -170,44 +182,49 @@ class TaskService {
       const task = await Task.findById(id);
 
       if (!task) {
-        return res
-          .status(404)
-          .json({ message: "Not found", code: "TASK_NOT_FOUND" });
+        res.status(404).json({ message: "Not found", code: "TASK_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           task.accommodationId.toString(),
         ) ||
-        !authorizedToModify(role, task.userId.toString(), userId)
+        !UserBusiness.canModifyObject(
+          testEnv,
+          role,
+          task.userId.toString(),
+          userId,
+        )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       await task.deleteOne();
 
-      return res.sendStatus(204);
+      res.sendStatus(204);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async filterTasks(req: Request, res: Response): Promise<any> {
+  async filterTasks(req: Request, res: Response): Promise<void> {
     try {
       const { name, weekly, done, userId } = req.query;
       const { role, accommodationId: userAccommodationId } = req;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const params: QueryParamsTasks = {};
@@ -236,12 +253,14 @@ class TaskService {
 
       const events = await Task.find(params);
 
-      return res.status(200).json(events);
+      res.status(200).json(events);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 }

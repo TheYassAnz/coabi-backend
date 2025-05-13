@@ -3,9 +3,9 @@ import User from "../models/user";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { split } from "../utils/utils";
-import { hasAccessToAccommodation } from "../utils/auth/accommodation";
 import { testEnv } from "../utils/env";
-import { authorizedToModify } from "../utils/auth/user";
+import { UserBusiness } from "./business/user-business";
+import { AccommodationBusiness } from "./business/accommodation-business";
 
 interface QueryParamsRefunds {
   title?: {
@@ -22,15 +22,14 @@ interface QueryParamsRefunds {
 }
 
 class RefundService {
-  async getAllRefunds(req: Request, res: Response): Promise<any> {
+  async getAllRefunds(req: Request, res: Response): Promise<void> {
     try {
       const { role, accommodationId: userAccommodationId } = req;
       const { adminUI } = req.query;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       let params: any = {};
@@ -44,12 +43,14 @@ class RefundService {
       }
 
       const refunds = await Refund.find(params);
-      return res.json(refunds);
+      res.json(refunds);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
@@ -75,20 +76,20 @@ class RefundService {
       return newRefund;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return null;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return null;
     }
   }
 
-  async createRefunds(req: Request, res: Response): Promise<any> {
+  async createRefunds(req: Request, res: Response): Promise<void> {
     try {
-      const { title, toSplit, userId, roommateIds, accommodationId } = req.body; // roommateIds is a string[]
+      const { title, toSplit, userId, roommateIds, accommodationId } = req.body;
       const {
         role,
         accommodationId: userAccommodationId,
@@ -96,9 +97,8 @@ class RefundService {
       } = req;
 
       if (requestUserId && requestUserId !== userId) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       let roommates = await User.find({ _id: { $in: roommateIds } });
@@ -109,22 +109,21 @@ class RefundService {
             roommate.accommodationId.toString() === userAccommodationId,
         );
         if (roommates.length === 0) {
-          return res
+          res
             .status(404)
             .json({ message: "Not found", code: "ROOMMATE_NOT_FOUND" });
+          return;
         }
       }
 
       if (toSplit < 0) {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
 
       if (roommateIds.length === 0) {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
 
       const toRefund = split(toSplit, roommateIds.length + 1);
@@ -142,21 +141,22 @@ class RefundService {
         }),
       );
 
-      return res.status(201).json(newRefunds);
+      res.status(201).json(newRefunds);
+      return;
     } catch (error: any) {
       if (error.message === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async getRefundById(req: Request, res: Response): Promise<any> {
+  async getRefundById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, accommodationId: userAccommodationId } = req;
@@ -164,33 +164,36 @@ class RefundService {
       const refund = await Refund.findById(id);
 
       if (!refund) {
-        return res
+        res
           .status(404)
           .json({ message: "Not found", code: "REFUND_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           refund.accommodationId.toString(),
         )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
-      return res.status(200).json(refund);
+      res.status(200).json(refund);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async updateRefundById(req: Request, res: Response): Promise<any> {
+  async updateRefundById(req: Request, res: Response): Promise<void> {
     try {
       const updateData = req.body;
       const { id } = req.params;
@@ -199,45 +202,52 @@ class RefundService {
       const refund = await Refund.findById(id);
 
       if (!refund) {
-        return res
+        res
           .status(404)
           .json({ message: "Not found", code: "REFUND_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           refund.accommodationId.toString(),
         ) ||
-        !authorizedToModify(role, refund.userId.toString(), userId) ||
+        !UserBusiness.canModifyObject(
+          testEnv,
+          role,
+          refund.userId.toString(),
+          userId,
+        ) ||
         updateData.accommodationId ||
         updateData.userId ||
         updateData.roommateId
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       refund.set(updateData);
       await refund.save();
 
-      return res.status(200).json(refund);
+      res.status(200).json(refund);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async deleteRefundById(req: Request, res: Response): Promise<any> {
+  async deleteRefundById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { userId, role, accommodationId: userAccommodationId } = req;
@@ -245,44 +255,51 @@ class RefundService {
       const refund = await Refund.findById(id);
 
       if (!refund) {
-        return res
+        res
           .status(404)
           .json({ message: "Not found", code: "REFUND_NOT_FOUND" });
+        return;
       }
 
       if (
-        !hasAccessToAccommodation(
+        !AccommodationBusiness.hasAccess(
+          testEnv,
           role,
           userAccommodationId,
           refund.accommodationId.toString(),
         ) ||
-        !authorizedToModify(role, refund.userId.toString(), userId)
+        !UserBusiness.canModifyObject(
+          testEnv,
+          role,
+          refund.userId.toString(),
+          userId,
+        )
       ) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       await refund.deleteOne();
-      return res.sendStatus(204);
+      res.sendStatus(204);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async filterRefunds(req: Request, res: Response): Promise<any> {
+  async filterRefunds(req: Request, res: Response): Promise<void> {
     try {
       const { title, toRefundStart, toRefundEnd, userId, roommateId } =
         req.query;
       const { role, accommodationId: userAccommodationId } = req;
 
       if (!testEnv && !userAccommodationId && role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Forbidden", code: "FORBIDDEN" });
+        res.status(403).json({ message: "Forbidden", code: "FORBIDDEN" });
+        return;
       }
 
       const params: QueryParamsRefunds = {};
@@ -317,12 +334,14 @@ class RefundService {
 
       const refunds = await Refund.find(params);
 
-      return res.status(200).json(refunds);
+      res.status(200).json(refunds);
+      return;
     } catch (error: any) {
-      return res.status(500).json({
+      res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 }
