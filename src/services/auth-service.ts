@@ -9,30 +9,33 @@ import {
 } from "../utils/auth/jwt";
 
 class AuthService {
-  async register(req: Request, res: Response): Promise<any> {
+  async register(req: Request, res: Response): Promise<void> {
     try {
       const { username, password, email } = req.body;
 
       if (!validPasswordLength(password)) {
-        return res.status(400).json({
+        res.status(400).json({
           message: "Password must be between 8 and 72 characters.",
           code: "PASSWORD_LENGTH",
         });
+        return;
       }
 
       const existingUsername = await User.findOne({ username });
 
       if (existingUsername) {
-        return res
+        res
           .status(409)
           .json({ message: "Username already taken", code: "USERNAME_TAKEN" });
+        return;
       }
 
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
-        return res
+        res
           .status(409)
           .json({ message: "Email already taken", code: "EMAIL_TAKEN" });
+        return;
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,20 +52,21 @@ class AuthService {
         newUser.toObject();
 
       res.status(201).json(userWithoutPassword);
+      return;
     } catch (error: any) {
       if (error.name === "ValidationError") {
-        return res
-          .status(400)
-          .json({ message: "Bad request", code: "BAD_REQUEST" });
+        res.status(400).json({ message: "Bad request", code: "BAD_REQUEST" });
+        return;
       }
       res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async login(req: Request, res: Response): Promise<any> {
+  async login(req: Request, res: Response): Promise<void> {
     try {
       const { username, password } = req.body;
 
@@ -96,65 +100,74 @@ class AuthService {
       setRefreshTokenCookie(res, refreshToken);
 
       res.status(200).json({ accessToken: accessToken });
+      return;
     } catch (error: any) {
       res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
     }
   }
 
-  async refresh(req: Request, res: Response): Promise<any> {
+  async refresh(req: Request, res: Response): Promise<void> {
     try {
       const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
-        return res.status(401).json({
+        res.status(401).json({
           message: "No refresh token provided",
           code: "NO_REFRESH_TOKEN",
         });
+        return;
       }
 
       let decoded;
       try {
         decoded = verifyRefreshToken(refreshToken);
       } catch (err) {
-        return res.status(401).json({
+        res.status(401).json({
           message: "Invalid refresh token",
           code: "INVALID_REFRESH_TOKEN",
         });
+        return;
       }
 
       const userId = typeof decoded === "string" ? decoded : decoded.id;
 
       if (!userId) {
-        return res.status(403).json({
+        res.status(403).json({
           message: "Invalid token payload",
           code: "INVALID_TOKEN_PAYLOAD",
         });
+        return;
       }
 
       const tokens = generateTokens({ id: userId });
 
       setRefreshTokenCookie(res, tokens.refreshToken);
-      return res.status(200).json({ accessToken: tokens.accessToken });
-    } catch (error: any) {
-      return res.status(500).json({
-        message: "Internal server error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
-    }
-  }
-
-  async logout(req: Request, res: Response): Promise<any> {
-    try {
-      res.clearCookie("refreshToken");
-      return res.sendStatus(204);
+      res.status(200).json({ accessToken: tokens.accessToken });
+      return;
     } catch (error: any) {
       res.status(500).json({
         message: "Internal server error",
         code: "INTERNAL_SERVER_ERROR",
       });
+      return;
+    }
+  }
+
+  async logout(req: Request, res: Response): Promise<void> {
+    try {
+      res.clearCookie("refreshToken");
+      res.sendStatus(204);
+      return;
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+      return;
     }
   }
 }
