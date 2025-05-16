@@ -1,45 +1,47 @@
-import Accommodation from "../models/accommodation";
 import { Request, Response } from "express";
+import AccommodationService from "../services/accommodation-service";
 
-const getAllAccommodations = (req: Request, res: Response): Promise<any> => {
-  return Accommodation.find()
-    .then((accommodations: any) => {
-      return res.status(200).json({
-        message: "OK",
-        data: accommodations,
-      });
-    })
-    .catch((error: any) => {
-      return res.status(500).json({ message: "Not found", error: error.message });
-    });
+const accommodationService = new AccommodationService();
+
+const getAllAccommodations = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  return accommodationService.getAllAccommodations(req, res);
 };
 
-const createAccommodation = async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { name, code, location, postalCode, country } = req.body;
+const createAccommodation = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  return accommodationService.createAccommodation(req, res);
+};
 
-    if (!name || !code || !location || !postalCode || !country) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+const getAccommodationById = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  return accommodationService.getAccommodationById(req, res);
+};
 
-    const newAccommodation = new Accommodation({
-      name,
-      code,
-      location,
-      postalCode,
-      country,
-    });
+const updateAccommodationById = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  return accommodationService.updateAccommodationById(req, res);
+};
 
-    await newAccommodation.save();
-
-    return res.status(201).json({ accommodation: newAccommodation });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Bad request", error });
-  }
+const deleteAccommodationById = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  return accommodationService.deleteAccommodationById(req, res);
 };
 
 export default {
   getAllAccommodations,
   createAccommodation,
+  getAccommodationById,
+  updateAccommodationById,
+  deleteAccommodationById,
 };

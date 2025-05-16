@@ -1,17 +1,25 @@
-import { Schema, model, Types, Document } from 'mongoose';
+import { Schema, model, Types, Document } from "mongoose";
 
 interface Rule extends Document {
+  _id: Types.ObjectId;
   title: string;
   description: string;
-  accommodation_id: Types.ObjectId; 
-};
+  accommodationId: Types.ObjectId;
+}
 
-const ruleSchema = new Schema<Rule>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  accommodation_id: { type: Schema.Types.ObjectId, ref: 'Accommodation', required: true }
-})
+const ruleSchema = new Schema<Rule>(
+  {
+    title: { type: String, required: true, maxlength: 50 },
+    description: { type: String, required: true, maxlength: 500 },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
-const RuleModel = model<Rule>('Rule', ruleSchema);
+const RuleModel = model<Rule>("Rule", ruleSchema);
 
 export default RuleModel;

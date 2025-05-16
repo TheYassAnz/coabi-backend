@@ -1,38 +1,76 @@
 import { Schema, model, Types, Document } from "mongoose";
 
 interface User extends Document {
-  firstname: string;
-  lastname: string;
+  _id: Types.ObjectId;
+  firstName: string | null;
+  lastName: string | null;
   username: string;
   password: string;
-  age: number;
-  description: string;
+  age: number | null;
+  description: string | null;
   email: string;
-  phone_number: string;
-  profile_picture_id: Types.ObjectId | null;
-  accommodation_id: Types.ObjectId | null;
+  phoneNumber: string | null;
+  role: "user" | "moderator" | "admin";
+  profilePictureId: Types.ObjectId | null;
+  accommodationId: Types.ObjectId | null;
 }
 
-const userSchema = new Schema<User>({
-  firstname: { type: String, required: true },
-  lastname: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  age: { type: Number, required: true },
-  description: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  phone_number: { type: String, required: true },
-  profile_picture_id: {
-    type: Schema.Types.ObjectId,
-    ref: "File",
-    required: false,
+const userSchema = new Schema<User>(
+  {
+    firstName: { type: String, required: false, default: null, maxlength: 50 },
+    lastName: { type: String, required: false, default: null, maxlength: 50 },
+    username: { type: String, required: true, unique: true, maxlength: 50 },
+    password: { type: String, required: true }, // password length is handled in the controller
+    age: { type: Number, required: false, default: null, min: 0, max: 120 },
+    description: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 500,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email address"],
+      maxlength: 50,
+    },
+    phoneNumber: {
+      type: String,
+      required: false,
+      unique: false,
+      default: null,
+      maxlength: 15,
+    },
+    role: {
+      type: String,
+      required: false,
+      enum: ["user", "moderator", "admin"],
+      default: "user",
+    },
+    profilePictureId: {
+      type: Schema.Types.ObjectId,
+      ref: "File",
+      default: null,
+      required: false,
+    },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      default: null,
+      required: false,
+    },
   },
-  accommodation_id: {
-    type: Schema.Types.ObjectId,
-    ref: "Accommodation",
-    required: false,
+  { timestamps: true },
+);
+
+userSchema.index(
+  { phoneNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { phoneNumber: { $type: "string" } },
   },
-});
+);
 
 const UserModel = model<User>("User", userSchema);
 

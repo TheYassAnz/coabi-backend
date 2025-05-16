@@ -1,21 +1,31 @@
-import { Schema, model, Types, Document } from 'mongoose';
+import { Schema, model, Types, Document } from "mongoose";
 
 interface Refund extends Document {
+  _id: Types.ObjectId;
   title: string;
-  to_refund: number;
+  toRefund: number;
   done: boolean;
-  user_id: Types.ObjectId;
-  roomate_id: Types.ObjectId 
-};
+  userId: Types.ObjectId;
+  roommateId: Types.ObjectId;
+  accommodationId: Types.ObjectId;
+}
 
-const refundSchema = new Schema <Refund>({
-    title: {type: String, required: true},
-    to_refund: {type: Number, required: true},
-    done: {type: Boolean, required: false, default: false},
-    user_id: {type: Schema.Types.ObjectId, ref: 'User', required: true},
-    roomate_id: {type: Schema.Types.ObjectId, ref: 'User', required: true}
-});
+const refundSchema = new Schema<Refund>(
+  {
+    title: { type: String, required: true, maxlength: 50 },
+    toRefund: { type: Number, required: true, min: 0, max: 1000000 },
+    done: { type: Boolean, required: false, default: false },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    roommateId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    accommodationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accommodation",
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
-const RefundModel = model<Refund>('Refund', refundSchema);
+const RefundModel = model<Refund>("Refund", refundSchema);
 
 export default RefundModel;
