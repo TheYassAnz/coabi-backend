@@ -1,0 +1,22 @@
+name: Déploiement Docker Compose sur Azure VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connexion SSH et déploiement
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            cd coabi-backend
+            git pull origin main
+            docker compose down || true
+            docker compose up --build -d
