@@ -1,4 +1,4 @@
-name: Déploiement Docker Compose sur Azure VM
+name: Déploiement sur Azure VM - Production
 
 on:
   push:
@@ -17,7 +17,8 @@ jobs:
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
-            cd coabi-backend
+            cd ~ 
+            cd coabi/api/prod
             git pull origin main
             docker compose down || true
             docker compose up --build -d
