@@ -22,6 +22,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.10",
+    "@types/nodemailer": "^6.4.17",
     "@types/sanitize-html": "^2.15.0",
     "@types/supertest": "^6.0.3",
     "eslint": "^9.23.0",
@@ -53,6 +54,7 @@
     "mongoose": "^8.12.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.2",
+    "nodemailer": "^7.0.3",
     "sanitize-html": "^2.16.0"
   },
   "lint-staged": {

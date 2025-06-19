@@ -7,6 +7,7 @@ import {
   setRefreshTokenCookie,
   verifyRefreshToken,
 } from "../utils/auth/jwt";
+import { sendWelcomeEmail } from "../utils/mailer";
 
 class AuthService {
   async register(req: Request, res: Response): Promise<void> {
@@ -47,6 +48,14 @@ class AuthService {
       });
 
       await newUser.save();
+
+      // Send welcome email
+      try {
+        await sendWelcomeEmail(email, username);
+        console.log("Welcome email sent successfully to:", email);
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError);
+      }
 
       const { password: userPassword, ...userWithoutPassword } =
         newUser.toObject();
