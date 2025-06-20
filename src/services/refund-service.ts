@@ -332,9 +332,13 @@ class RefundService {
         );
       }
 
-      const refunds = await Refund.find(params);
+      const refunds = await Refund.find(params)
+        .populate("userId", "username")
+        .populate("roommateId", "username");
 
       res.status(200).json(refunds);
+
+      console.log(refunds);
       return;
     } catch (error: any) {
       res.status(500).json({

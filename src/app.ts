@@ -38,7 +38,7 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(morgan("dev"));
 
-app.use(cors(corsOptions)); // Enable CORS for frontend requests only
+// app.use(cors(corsOptions)); // Enable CORS for frontend requests only
 app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
